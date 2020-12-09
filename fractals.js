@@ -1,16 +1,3 @@
-//////////////////////////////////////////////////////////////////////////////
-//
-//  WebGL_example_27.js 
-//
-//  Simple mesh data structure
-//
-//  Adapted from learningwebgl.com
-//
-//  J. Madeira - November 2015
-//
-//////////////////////////////////////////////////////////////////////////////
-
-
 //----------------------------------------------------------------------------
 //
 // Global Variables
@@ -20,7 +7,7 @@ var gl = null; // WebGL context
 
 var shaderProgram = null; 
 
-// NEW --- Buffers
+// Buffers
 
 var cubeVertexPositionBuffer = null;
 	
@@ -54,7 +41,7 @@ var sy = 0.25;
 
 var sz = 0.25;
 
-// NEW - Animation controls
+// Animation controls
 
 var rotationXX_ON = 0;
 
@@ -84,7 +71,7 @@ var projectionType = 0;
  
 // From learningwebgl.com
 
-// NEW --- Storing the vertices defining the cube faces
+// Storing the vertices defining the cube faces
 
 var vertices = [
             // Front face
@@ -317,9 +304,6 @@ function drawScene() {
 		
 		tz = 0;
 		
-		// TO BE DONE !
-		
-		// Allow the user to control the size of the view volume
 	}
 	else {	
 
@@ -341,7 +325,7 @@ function drawScene() {
 	
 	gl.uniformMatrix4fv(pUniform, false, new Float32Array(flatten(pMatrix)));
 	
-	// NEW --- Instantianting the same model more than once !!
+	// Instantianting the same model more than once !!
 	
 	// And with diferent transformation parameters !!
 	
@@ -362,7 +346,7 @@ function drawScene() {
 
 //----------------------------------------------------------------------------
 //
-//  NEW --- Animation
+//  Animation
 //
 
 // Animation --- Updating transformation parameters
@@ -553,7 +537,7 @@ function outputInfos(){
 
 function setEventListeners( canvas ){
 	
-	// NEW ---Handling the mouse
+	// Handling the mouse
 	
 	// From learningwebgl.com
 
@@ -563,7 +547,7 @@ function setEventListeners( canvas ){
     
     document.onmousemove = handleMouseMove;
     
-    // NEW ---Handling the keyboard
+    // Handling the keyboard
 	
 	// From learningwebgl.com
 
@@ -581,8 +565,26 @@ function setEventListeners( canvas ){
     
     document.onkeyup = handleKeyUp;
 	
-	// Dropdown list
+	// Dropdown lists
 	
+	var fractal = document.getElementById("fractal-selection");
+	
+	fractal.addEventListener("click", function(){
+				
+		// Getting the selection
+		
+		var p = fractal.selectedIndex;
+				
+		switch(p){
+			
+			case 0 : 
+				break;
+			
+			case 1 : 
+				break;
+		}  	
+	});      
+
 	var projection = document.getElementById("projection-selection");
 	
 	projection.addEventListener("click", function(){
@@ -778,7 +780,7 @@ function initWebGL( canvas ) {
 		
 		// DEFAULT: The viewport background color is WHITE
 		
-		// NEW - Drawing the triangles defining the model
+		// Drawing the triangles defining the model
 		
 		primitiveType = gl.TRIANGLES;
 		

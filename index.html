@@ -5,16 +5,11 @@
 <head>
 	
 <!--
-
-WebGL_example_27.html
-
-Simple mesh data structure
-
-J. Madeira - November 2015
-
+	3D Fractals
+	Bruno Aguiar, Paulo Sousa
 -->
 	
-<title>WebGL example 27 &mdash; Mesh Data Structure</title>
+<title>Fractals &mdash; 3D</title>
 
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 
@@ -89,23 +84,38 @@ Passing the Model-View Matrix and the Projection Matrix.
 
 <script type="text/javascript" src="fractals.js"></script>
 
+
+<!-- Bootstrap Stuff -->
+<script src="js/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+<script src="js/bootstrap.min.js"></script>
+
+<!-- Bootstrap Toggle Library -->
+<link rel="stylesheet" href="css/bootstrap-toggle.min.css">
+<script src="js/bootstrap-toggle.min.js"></script>
+
+<!-- Custom CSS -->
+<link rel="stylesheet" href="css/custom.css">
+
 </head>
 
 <body onload="runWebGL();">
 
 	<div style="text-align: center">
 		
-		<p>Model animation using rotations</p>
+		<p>3D Fractals</p>
 		
 		<canvas id="my-canvas" style="border:1px solid #000000;" width="500" height="500"></canvas>
 
-        <p>Use cursor keys to spin and <code>0</code>/<code>1</code> to zoom out/in.</p>
+        <p>Use cursor keys to spin and scroll to zoom out/in.</p>
 		
 		<p>Press any mouse button and move the cursor to rotate the models.</p>
 		
-		<p>XX rotation: 
-			
-		<button id="XX-on-off-button">On / Off</button>
+		<p>XX Rotation: 
+		<label class="switch">
+			<input id="XX-on-off-button" type="checkbox">
+			<span for="XX-on-off-button" class="slider round"></span>
+		</label>
 
 	    <button id="XX-direction-button">Change Direction</button>
 
@@ -115,9 +125,11 @@ Passing the Model-View Matrix and the Projection Matrix.
 
 		</p>
 		
-		<p>YY rotation: 
-			
-		<button id="YY-on-off-button">On / Off</button>
+		<p>YY Rotation: 
+		<label class="switch">
+			<input id="YY-on-off-button" type="checkbox">
+			<span for="YY-on-off-button" class="slider round"></span>
+		</label>
 
 	    <button id="YY-direction-button">Change Direction</button>
 
@@ -127,9 +139,11 @@ Passing the Model-View Matrix and the Projection Matrix.
 
 		</p>
 		
-		<p>ZZ rotation: 
-			
-		<button id="ZZ-on-off-button">On / Off</button>
+		<p>ZZ Rotation: 
+		<label class="switch">
+			<input id="ZZ-on-off-button" type="checkbox">
+			<span for="ZZ-on-off-button" class="slider round"></span>
+		</label>
 
 	    <button id="ZZ-direction-button">Change Direction</button>
 
@@ -139,13 +153,25 @@ Passing the Model-View Matrix and the Projection Matrix.
 
 		</p>
 		
+		<p>Choose the <b>FRACTAL</b>:
+			<select id="fractal-selection">
+				<option value="0">Koch Snowflake</option>
+				<option value="1">CUBO</option>
+			</select>
+
 		<p>Choose the <b>projection type</b>:
-		
         <select id="projection-selection">
 			<option value="0">Orthogonal Projection</option>
 			<option value="1">Perspective Projection</option>
         </select>
-        
+		
+		<p>Choose the <b>rendering mode</b>:
+		<select id="rendering-mode-selection">
+			<option value="0">Filled Triangles</option>
+			<option value="1">Wireframe</option>
+			<option value="2">Vertices</option>
+		</select>
+		
         </p>
                 
 		<p>
