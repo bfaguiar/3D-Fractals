@@ -9,10 +9,6 @@
 //////////////////////////////////////////////////////////////////////////////
 
 
-// permite ler o código e instanciar os shaders
-
-
-
 // Getting and compiling a shader
 
 function getShader(gl, id) {

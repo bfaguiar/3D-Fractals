@@ -1,3 +1,15 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+//  WebGL_example_27.js 
+//
+//  Simple mesh data structure
+//
+//  Adapted from learningwebgl.com
+//
+//  J. Madeira - November 2015
+//
+//////////////////////////////////////////////////////////////////////////////
+
 
 //----------------------------------------------------------------------------
 //
@@ -8,9 +20,13 @@ var gl = null; // WebGL context
 
 var shaderProgram = null; 
 
-var triangleVertexPositionBuffer = null;
+// NEW --- Buffers
+
+var cubeVertexPositionBuffer = null;
 	
-var triangleVertexColorBuffer = null;
+var cubeVertexColorBuffer = null;
+
+var cubeVertexIndexBuffer = null;
 
 // The global transformation parameters
 
@@ -32,161 +48,146 @@ var angleZZ = 0.0;
 
 // The scaling factors
 
-var sx = 1.0;
+var sx = 0.25;
 
-var sy = 1.0;
+var sy = 0.25;
 
-var sz = 1.0;
+var sz = 0.25;
+
+// NEW - Animation controls
+
+var rotationXX_ON = 0;
+
+var rotationXX_DIR = 1;
+
+var rotationXX_SPEED = 1;
  
-// NEW - To allow choosing the way of drawing the model triangles
+var rotationYY_ON = 0;
+
+var rotationYY_DIR = 1;
+
+var rotationYY_SPEED = 1;
+ 
+var rotationZZ_ON = 0;
+
+var rotationZZ_DIR = 1;
+
+var rotationZZ_SPEED = 1;
+ 
+// To allow choosing the way of drawing the model triangles
 
 var primitiveType = null;
  
-// For storing the vertices defining the triangles
+// To allow choosing the projection type
+
+var projectionType = 0;
+ 
+// From learningwebgl.com
+
+// NEW --- Storing the vertices defining the cube faces
 
 var vertices = [
+            // Front face
+            -1.0, -1.0,  1.0,
+             1.0, -1.0,  1.0,
+             1.0,  1.0,  1.0,
+            -1.0,  1.0,  1.0,
 
-		// FRONT FACE
-		 
-		-0.25, -0.25,  0.25,
-		 
-		 0.25, -0.25,  0.25,
-		 
-		 0.25,  0.25,  0.25,
+            // Back face
+            -1.0, -1.0, -1.0,
+            -1.0,  1.0, -1.0,
+             1.0,  1.0, -1.0,
+             1.0, -1.0, -1.0,
 
-		 
-		 0.25,  0.25,  0.25,
-		 
-		-0.25,  0.25,  0.25,
-		 
-		-0.25, -0.25,  0.25,
-		
-		// TOP FACE
-		
-		-0.25,  0.25,  0.25,
-		 
-		 0.25,  0.25,  0.25,
-		 
-		 0.25,  0.25, -0.25,
+            // Top face
+            //-1.0,  1.0, -1.0,
+            //-1.0,  1.0,  1.0,
+            // 1.0,  1.0,  1.0,
+            // 1.0,  1.0, -1.0,
 
-		 
-		 0.25,  0.25, -0.25,
-		 
-		-0.25,  0.25, -0.25,
-		 
-		-0.25,  0.25,  0.25,
-		
-		// BOTTOM FACE 
-		
-		-0.25, -0.25, -0.25,
-		 
-		 0.25, -0.25, -0.25,
-		 
-		 0.25, -0.25,  0.25,
+            // Bottom face
+            //-1.0, -1.0, -1.0,
+            // 1.0, -1.0, -1.0,
+            // 1.0, -1.0,  1.0,
+            //-1.0, -1.0,  1.0,
 
-		 
-		 0.25, -0.25,  0.25,
-		 
-		-0.25, -0.25,  0.25,
-		 
-		-0.25, -0.25, -0.25,
-		
-		// LEFT FACE 
-		
-		-0.25,  0.25,  0.25,
-		 
-		-0.25, -0.25, -0.25,
+            // Right face
+            // 1.0, -1.0, -1.0,
+            // 1.0,  1.0, -1.0,
+            // 1.0,  1.0,  1.0,
+            // 1.0, -1.0,  1.0,
 
-		-0.25, -0.25,  0.25,
-		 
-		 
-		-0.25,  0.25,  0.25,
-		 
-		-0.25,  0.25, -0.25,
-		 
-		-0.25, -0.25, -0.25,
-		
-		// RIGHT FACE 
-		
-		 0.25,  0.25, -0.25,
-		 
-		 0.25, -0.25,  0.25,
-
-		 0.25, -0.25, -0.25,
-		 
-		 
-		 0.25,  0.25, -0.25,
-		 
-		 0.25,  0.25,  0.25,
-		 
-		 0.25, -0.25,  0.25,
-		
-		// BACK FACE 
-		
-		-0.25,  0.25, -0.25,
-		 
-		 0.25, -0.25, -0.25,
-
-		-0.25, -0.25, -0.25,
-		 
-		 
-		-0.25,  0.25, -0.25,
-		 
-		 0.25,  0.25, -0.25,
-		 
-		 0.25, -0.25, -0.25,			 
+            // Left face
+            //-1.0, -1.0, -1.0,
+            //-1.0, -1.0,  1.0,
+            //-1.0,  1.0,  1.0,
+            //-1.0,  1.0, -1.0
 ];
 
+// Vertex indices defining the triangles
+        
+var cubeVertexIndices = [
+
+            0, 1, 2,      0, 2, 3,    // Front face
+
+            4, 5, 6,      4, 6, 7,    // Back face
+
+            5, 3, 2,     5, 2, 6,  // Top face
+
+            4, 7, 1,   4, 1, 0, // Bottom face
+
+            7, 6, 2,   7, 2, 1, // Right face
+
+            4, 0, 3,   4, 3, 5	  // Left face
+];
+         
 // And their colour
 
 var colors = [
 
-		 // FRONT FACE
+		 // FRONT FACE - RED
 		 	
-		 1.00,  0.00,  0.00,
+		 0.00,  0.00,  1.00,
 		 
-		 1.00,  0.00,  0.00,
+		 0.00,  0.00,  1.00,
 		 
-		 1.00,  0.00,  0.00,
+		 0.00,  0.00,  1.00,
 
-		 	
-		 1.00,  1.00,  0.00,
-		 
-		 1.00,  1.00,  0.00,
-		 
-		 1.00,  1.00,  0.00,
+	     0.00,  0.00,  1.00,
 		 			 
-		 // TOP FACE
+		 // BACK FACE - BLACK
 		 	
-		 0.00,  0.00,  0.00,
+		 1.00,  0.00,  1.00,
 		 
-		 0.00,  0.00,  0.00,
+		 1.00,  0.00,  1.00,
+		 		 
+		 1.00,  0.00,  1.00,
 		 
-		 0.00,  0.00,  0.00,
+		 1.00,  0.00,  1.00,
+		 			 
+		 // TOP FACE - 
+		 	
+		 1.00,  1.00,  0.00,
+		 
+		 1.00,  1.00,  0.00,
+		 
+		 1.00,  1.00,  0.00,
 
-		 	
-		 0.50,  0.50,  0.50,
-		 
-		 0.50,  0.50,  0.50,
-		 
-		 0.50,  0.50,  0.50,
+		 1.00,  1.00,  0.00,
+
 		 			 
 		 // BOTTOM FACE
 		 	
-		 0.00,  1.00,  0.00,
+		 0.00,  1.00,  1.00,
 		 
-		 0.00,  1.00,  0.00,
+		 0.00,  1.00,  1.00,
 		 
-		 0.00,  1.00,  0.00,
+		 0.00,  1.00,  1.00,
 
-		 	
 		 0.00,  1.00,  1.00,
-		 
-		 0.00,  1.00,  1.00,
-		 
-		 0.00,  1.00,  1.00,
+
 		 			 
-		 // LEFT FACE
+		 // RIGHT FACE - BLUE
 		 	
 		 0.00,  0.00,  1.00,
 		 
@@ -194,43 +195,18 @@ var colors = [
 		 
 		 0.00,  0.00,  1.00,
 
-		 	
-		 1.00,  0.00,  1.00,
-		 
-		 1.00,  0.00,  1.00,
-		 
-		 1.00,  0.00,  1.00,
+		 0.00,  0.00,  1.00,
 		 			 
-		 // RIGHT FACE
+		 			 
+		 // LEFT FACE - GREEN
 		 	
-		 0.25,  0.50,  0.50,
+		 0.00,  1.00,  0.00,
 		 
-		 0.25,  0.50,  0.50,
+		 0.00,  1.00,  0.00,
 		 
-		 0.25,  0.50,  0.50,
+		 0.00,  1.00,  0.00,
 
-		 	
-		 0.50,  0.25,  0.00,
-		 
-		 0.50,  0.25,  0.00,
-		 
-		 0.50,  0.25,  0.00,
-		 			 
-		 			 
-		 // BACK FACE
-		 	
-		 0.25,  0.00,  0.75,
-		 
-		 0.25,  0.00,  0.75,
-		 
-		 0.25,  0.00,  0.75,
-
-		 	
-		 0.50,  0.35,  0.35,
-		 
-		 0.50,  0.35,  0.35,
-		 
-		 0.50,  0.35,  0.35,			 			 
+		 0.00,  1.00,  0.00,
 ];
 
 //----------------------------------------------------------------------------
@@ -249,31 +225,72 @@ function initBuffers() {
 	
 	// Coordinates
 		
-	triangleVertexPositionBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
+	cubeVertexPositionBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-	triangleVertexPositionBuffer.itemSize = 3;
-	triangleVertexPositionBuffer.numItems = vertices.length / 3;			
+	cubeVertexPositionBuffer.itemSize = 3;
+	cubeVertexPositionBuffer.numItems = vertices.length / 3;			
 
-	// Associating to the vertex shader
-	
-	gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 
-			triangleVertexPositionBuffer.itemSize, 
-			gl.FLOAT, false, 0, 0);
-	
 	// Colors
 		
-	triangleVertexColorBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexColorBuffer);
+	cubeVertexColorBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexColorBuffer);
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-	triangleVertexColorBuffer.itemSize = 3;
-	triangleVertexColorBuffer.numItems = colors.length / 3;			
+	cubeVertexColorBuffer.itemSize = 3;
+	cubeVertexColorBuffer.numItems = vertices.length / 3;			
 
-	// Associating to the vertex shader
+	// Vertex indices
 	
-	gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, 
-			triangleVertexColorBuffer.itemSize, 
-			gl.FLOAT, false, 0, 0);
+    cubeVertexIndexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertexIndices), gl.STATIC_DRAW);
+    cubeVertexIndexBuffer.itemSize = 1;
+    cubeVertexIndexBuffer.numItems = 36;
+}
+
+//----------------------------------------------------------------------------
+
+//  Drawing the model
+
+function drawModel( angleXX, angleYY, angleZZ, 
+					sx, sy, sz,
+					tx, ty, tz,
+					mvMatrix,
+					primitiveType ) {
+
+    // Pay attention to transformation order !!
+    
+	mvMatrix = mult( mvMatrix, translationMatrix( tx, ty, tz ) );
+						 
+	mvMatrix = mult( mvMatrix, rotationZZMatrix( angleZZ ) );
+	
+	mvMatrix = mult( mvMatrix, rotationYYMatrix( angleYY ) );
+	
+	mvMatrix = mult( mvMatrix, rotationXXMatrix( angleXX ) );
+	
+	mvMatrix = mult( mvMatrix, scalingMatrix( sx, sy, sz ) );
+						 
+	// Passing the Model View Matrix to apply the current transformation
+	
+	var mvUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+	
+	gl.uniformMatrix4fv(mvUniform, false, new Float32Array(flatten(mvMatrix)));
+
+    // Passing the buffers
+    	
+	gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
+    
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cubeVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexColorBuffer);
+    
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, cubeVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
+
+	// Drawing the triangles --- NEW --- DRAWING ELEMENTS 
+	
+	gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);	
 }
 
 //----------------------------------------------------------------------------
@@ -282,62 +299,246 @@ function initBuffers() {
 
 function drawScene() {
 	
+	var pMatrix;
+	
+	var mvMatrix = mat4();
+	
 	// Clearing with the background color
 	
 	gl.clear(gl.COLOR_BUFFER_BIT);
+	
+	// NEW --- Computing the Projection Matrix
+	
+	if( projectionType == 0 ) {
+		
+		// For now, the default orthogonal view volume
+		
+		pMatrix = ortho( -1.0, 1.0, -1.0, 1.0, -1.0, 1.0 );
+		
+		tz = 0;
+		
+		// TO BE DONE !
+		
+		// Allow the user to control the size of the view volume
+	}
+	else {	
 
-	// Computing the Model-View Matrix
-	
-	// Pay attention to the matrix multiplication order!!
-	
-	// First transformation ?
-	
-	// Last transformation ?
-	
-	var mvMatrix = mult( rotationZZMatrix( angleZZ ), 
-	
-						 scalingMatrix( sx, sy, sz ) );
-						 
-	mvMatrix = mult( rotationYYMatrix( angleYY ), mvMatrix );
-						 
-	mvMatrix = mult( rotationXXMatrix( angleXX ), mvMatrix );
-						 
-	mvMatrix = mult( translationMatrix( tx, ty, tz ), mvMatrix );
-						 
-	// Passing the Model View Matrix to apply the current transformation
-	
-	var mvUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-	
-	gl.uniformMatrix4fv(mvUniform, false, new Float32Array(flatten(mvMatrix)));
-	
-	// Drawing the contents of the vertex buffer
-	
-	// primitiveType allows drawing as filled triangles / wireframe / vertices
-	
-	// COMPLETE THE CODE !!!
-	
-	// What are the possible values for the primitiveType variable?
-	
-	if( primitiveType == gl.LINE_LOOP ) {  // What is the boolean expression ?
+		// A standard view volume.
 		
-		// To simulate wireframe drawing!
+		// Viewer is at (0,0,0)
 		
-		// No faces are defined! There are no hidden lines!
+		// Ensure that the model is "inside" the view volume
 		
-		// Taking the vertices 3 by 3 and drawing a LINE_LOOP
+		pMatrix = perspective( 45, 1, 0.05, 10 );
+		
+		tz = -2.25;
 
-		for( var i = 0; i<triangleVertexPositionBuffer.numItems / 3; i++){
-			
-			gl.drawArrays(primitiveType, i*3, 3);
-		
-		}
-	}	
-	else {
-				
-		gl.drawArrays(primitiveType, 0, triangleVertexPositionBuffer.numItems); 
-		
-	}       
+	}
+	
+	// Passing the Projection Matrix to apply the current projection
+	
+	var pUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+	
+	gl.uniformMatrix4fv(pUniform, false, new Float32Array(flatten(pMatrix)));
+	
+	// NEW --- Instantianting the same model more than once !!
+	
+	// And with diferent transformation parameters !!
+	
+	// Call the drawModel function !!
+	
+	// Instance 1 --- RIGHT TOP
+	
+	
+	           
+	// cubo 	
+	drawModel( angleXX, angleYY, -angleZZ, 
+	           sx, sy, sz,
+	           tx , ty , tz,
+	           mvMatrix,
+	           primitiveType );
+	           
 }
+
+//----------------------------------------------------------------------------
+//
+//  NEW --- Animation
+//
+
+// Animation --- Updating transformation parameters
+
+var lastTime = 0;
+
+function animate() {
+	
+	var timeNow = new Date().getTime();
+	
+	if( lastTime != 0 ) {
+		
+		var elapsed = timeNow - lastTime;
+		
+		if( rotationXX_ON ) {
+
+			angleXX += rotationXX_DIR * rotationXX_SPEED * (90 * elapsed) / 1000.0;
+	    }
+
+		if( rotationYY_ON ) {
+
+			angleYY += rotationYY_DIR * rotationYY_SPEED * (90 * elapsed) / 1000.0;
+	    }
+
+		if( rotationZZ_ON ) {
+
+			angleZZ += rotationZZ_DIR * rotationZZ_SPEED * (90 * elapsed) / 1000.0;
+	    }
+	}
+	
+	lastTime = timeNow;
+}
+
+//----------------------------------------------------------------------------
+
+// Handling keyboard events
+
+// Adapted from www.learningwebgl.com
+
+var currentlyPressedKeys = {};
+
+function handleKeys() {
+	
+	if (currentlyPressedKeys[48]) {
+		
+		// Page Up
+		
+		sx *= 0.9;
+		
+		sz = sy = sx;
+	}
+	if (currentlyPressedKeys[49]) {
+		
+		// Page Down
+		
+		sx *= 1.1;
+		
+		sz = sy = sx;
+	}
+	if (currentlyPressedKeys[37]) {
+		
+		// Left cursor key
+		
+		if( rotationYY_ON == 0 ) {
+			
+			rotationYY_ON = 1;
+		}  
+		
+		rotationYY_SPEED -= 0.25;
+	}
+	if (currentlyPressedKeys[39]) {
+		
+		// Right cursor key
+		
+		if( rotationYY_ON == 0 ) {
+			
+			rotationYY_ON = 1;
+		}  
+		
+		rotationYY_SPEED += 0.25;
+	}
+	if (currentlyPressedKeys[38]) {
+		
+		// Up cursor key
+		
+		if( rotationXX_ON == 0 ) {
+			
+			rotationXX_ON = 1;
+		}  
+		
+		rotationXX_SPEED -= 0.25;
+	}
+	if (currentlyPressedKeys[40]) {
+		
+		// Down cursor key
+		
+		if( rotationXX_ON == 0 ) {
+			
+			rotationXX_ON = 1;
+		}  
+		
+		rotationXX_SPEED += 0.25;
+	}
+}
+
+//----------------------------------------------------------------------------
+
+// Handling mouse events
+
+// Adapted from www.learningwebgl.com
+
+
+var mouseDown = false;
+
+var lastMouseX = null;
+
+var lastMouseY = null;
+
+function handleMouseDown(event) {
+	
+    mouseDown = true;
+  
+    lastMouseX = event.clientX;
+  
+    lastMouseY = event.clientY;
+}
+
+function handleMouseUp(event) {
+
+    mouseDown = false;
+}
+
+function handleMouseMove(event) {
+
+    if (!mouseDown) {
+	  
+      return;
+    } 
+  
+    // Rotation angles proportional to cursor displacement
+    
+    var newX = event.clientX;
+  
+    var newY = event.clientY;
+
+    var deltaX = newX - lastMouseX;
+    
+    angleYY += radians( 10 * deltaX  )
+
+    var deltaY = newY - lastMouseY;
+    
+    angleXX += radians( 10 * deltaY  )
+    
+    lastMouseX = newX
+    
+    lastMouseY = newY;
+  }
+//----------------------------------------------------------------------------
+
+// Timer
+
+function tick() {
+	
+	requestAnimFrame(tick);
+	
+	// NEW --- Processing keyboard events 
+	
+	handleKeys();
+	
+	drawScene();
+	
+	animate();
+}
+
+
+
 
 //----------------------------------------------------------------------------
 //
@@ -350,253 +551,171 @@ function outputInfos(){
 
 //----------------------------------------------------------------------------
 
-function setEventListeners(){
+function setEventListeners( canvas ){
 	
-	// NEW --- Dropdown list
+	// NEW ---Handling the mouse
 	
-	var list = document.getElementById("rendering-mode-selection");
+	// From learningwebgl.com
+
+    canvas.onmousedown = handleMouseDown;
+    
+    document.onmouseup = handleMouseUp;
+    
+    document.onmousemove = handleMouseMove;
+    
+    // NEW ---Handling the keyboard
 	
-	list.addEventListener("click", function(){
+	// From learningwebgl.com
+
+    function handleKeyDown(event) {
+		
+        currentlyPressedKeys[event.keyCode] = true;
+    }
+
+    function handleKeyUp(event) {
+		
+        currentlyPressedKeys[event.keyCode] = false;
+    }
+
+	document.onkeydown = handleKeyDown;
+    
+    document.onkeyup = handleKeyUp;
+	
+	// Dropdown list
+	
+	var projection = document.getElementById("projection-selection");
+	
+	projection.addEventListener("click", function(){
 				
 		// Getting the selection
 		
-		var mode = list.selectedIndex;
+		var p = projection.selectedIndex;
 				
-		switch(mode){
+		switch(p){
 			
-			case 0 : primitiveType = gl.TRIANGLES;
+			case 0 : projectionType = 0;
 				break;
 			
-			case 1 : primitiveType = gl.LINE_LOOP;
+			case 1 : projectionType = 1;
 				break;
-			
-			case 2 : primitiveType = gl.POINTS;
-				break;
-		}
-		
-		// Rendering
-		
-		drawScene();  
-			
+		}  	
 	});      
 
-	// NEW --- File loading
-	
-	// Adapted from:
-	
-	// http://stackoverflow.com/questions/23331546/how-to-use-javascript-to-read-local-text-file-and-read-line-by-line
-	
-	document.getElementById("file").onchange = function(){
-		
-		var file = this.files[0];
-		
-		var reader = new FileReader();
-		
-		reader.onload = function( progressEvent ){
-			
-			// Entire file read as a string
-			
-			// The tokens/values in the file
-    
-			// Separation between values is 1 or more whitespaces
-    
-			var tokens = this.result.split(/\s\s*/);
-    
-			// Array of values; each value is a string
-			
-			var numVertices = parseInt( tokens[0] );
-			
-			// For every vertex we have 6 floating point values
-			
-			var i, j;
-			
-			var aux = 1;
-			
-			var newVertices = [];
-			
-			var newColors = []
-			
-			for( i = 0; i < numVertices; i++ ) {
-			
-				for( j = 0; j < 3; j++ ) {
-					
-					newVertices[ 3 * i + j ] = parseFloat( tokens[ aux++ ] );
-				}
-				
-				for( j = 0; j < 3; j++ ) {
-					
-					newColors[ 3 * i + j ] = parseFloat( tokens[ aux++ ] );
-				}
-			}
-					
-			// Assigning to the current model
-			
-			vertices = newVertices;
-			
-			colors = newColors;
-			
-			// Rendering the model just read
-		
-			initBuffers();
 
-			// RESET the transformations - NEED AUXILIARY FUNCTION !!
-			
-			tx = ty = tz = 0.0;
-			
-			angleXX = angleYY = angleZZ = 0.0;
-			
-			sx = sy = sz = 1.0;
-			
-			drawScene();
-		
-			console.log( "AFTER RENDERING" );
-		};
-		
-		// Entire file read as a string
-			
-		reader.readAsText( file );		
-	}
-	
 	// Button events
 	
-	document.getElementById("move-left-button").onclick = function(){
+	document.getElementById("XX-on-off-button").onclick = function(){
 		
-		// Updating
+		// Switching on / off
 		
-		tx -= 0.25;
-		
-		// Render the viewport
-		
-		drawScene();  
+		if( rotationXX_ON ) {
+			
+			rotationXX_ON = 0;
+		}
+		else {
+			
+			rotationXX_ON = 1;
+		}  
 	};
 
-	document.getElementById("move-right-button").onclick = function(){
+	document.getElementById("XX-direction-button").onclick = function(){
 		
-		// Updating
+		// Switching the direction
 		
-		tx += 0.25;
-						
-		// Render the viewport
-		
-		drawScene();  
+		if( rotationXX_DIR == 1 ) {
+			
+			rotationXX_DIR = -1;
+		}
+		else {
+			
+			rotationXX_DIR = 1;
+		}  
 	};      
 
-	document.getElementById("move-up-button").onclick = function(){
+	document.getElementById("XX-slower-button").onclick = function(){
 		
-		// Updating
-		
-		ty += 0.25;
-						
-		// Render the viewport
-		
-		drawScene();  
+		rotationXX_SPEED *= 0.75;  
 	};      
 
-	document.getElementById("move-down-button").onclick = function(){
+	document.getElementById("XX-faster-button").onclick = function(){
 		
-		// Updating
-		
-		ty -= 0.25;
-		
-		// Render the viewport
-		
-		drawScene();  
+		rotationXX_SPEED *= 1.25;  
 	};      
 
-	document.getElementById("scale-up-button").onclick = function(){
+	document.getElementById("YY-on-off-button").onclick = function(){
 		
-		// Updating
+		// Switching on / off
 		
-		sx *= 1.1;
+		if( rotationYY_ON ) {
+			
+			rotationYY_ON = 0;
+		}
+		else {
+			
+			rotationYY_ON = 1;
+		}  
+	};
+
+	document.getElementById("YY-direction-button").onclick = function(){
 		
-		sy *= 1.1;
+		// Switching the direction
 		
-		sz *= 1.1;
-		
-		// Render the viewport
-		
-		drawScene();  
+		if( rotationYY_DIR == 1 ) {
+			
+			rotationYY_DIR = -1;
+		}
+		else {
+			
+			rotationYY_DIR = 1;
+		}  
 	};      
 
-	document.getElementById("scale-down-button").onclick = function(){
+	document.getElementById("YY-slower-button").onclick = function(){
 		
-		// Updating
-		
-		sx *= 0.9;
-		
-		sy *= 0.9;
-		
-		sz *= 0.9;
-		
-		// Render the viewport
-		
-		drawScene();  
+		rotationYY_SPEED *= 0.75;  
 	};      
 
-	document.getElementById("XX-rotate-CW-button").onclick = function(){
+	document.getElementById("YY-faster-button").onclick = function(){
 		
-		// Updating
-		
-		angleXX -= 15.0;
-		
-		// Render the viewport
-		
-		drawScene();  
+		rotationYY_SPEED *= 1.25;  
 	};      
 
-	document.getElementById("XX-rotate-CCW-button").onclick = function(){
+	document.getElementById("ZZ-on-off-button").onclick = function(){
 		
-		// Updating
+		// Switching on / off
 		
-		angleXX += 15.0;
+		if( rotationZZ_ON ) {
+			
+			rotationZZ_ON = 0;
+		}
+		else {
+			
+			rotationZZ_ON = 1;
+		}  
+	};
+
+	document.getElementById("ZZ-direction-button").onclick = function(){
 		
-		// Render the viewport
+		// Switching the direction
 		
-		drawScene();  
+		if( rotationZZ_DIR == 1 ) {
+			
+			rotationZZ_DIR = -1;
+		}
+		else {
+			
+			rotationZZ_DIR = 1;
+		}  
 	};      
 
-	document.getElementById("YY-rotate-CW-button").onclick = function(){
+	document.getElementById("ZZ-slower-button").onclick = function(){
 		
-		// Updating
-		
-		angleYY -= 15.0;
-		
-		// Render the viewport
-		
-		drawScene();  
+		rotationZZ_SPEED *= 0.75;  
 	};      
 
-	document.getElementById("YY-rotate-CCW-button").onclick = function(){
+	document.getElementById("ZZ-faster-button").onclick = function(){
 		
-		// Updating
-		
-		angleYY += 15.0;
-		
-		// Render the viewport
-		
-		drawScene();  
-	};      
-
-	document.getElementById("ZZ-rotate-CW-button").onclick = function(){
-		
-		// Updating
-		
-		angleZZ -= 15.0;
-		
-		// Render the viewport
-		
-		drawScene();  
-	};      
-
-	document.getElementById("ZZ-rotate-CCW-button").onclick = function(){
-		
-		// Updating
-		
-		angleZZ += 15.0;
-		
-		// Render the viewport
-		
-		drawScene();  
+		rotationZZ_SPEED *= 1.25;  
 	};      
 
 	document.getElementById("reset-button").onclick = function(){
@@ -615,31 +734,29 @@ function setEventListeners(){
 
 		angleZZ = 0.0;
 
-		sx = 1.0;
+		sx = 0.25;
 
-		sy = 1.0;
+		sy = 0.25;
 
-		sz = 1.0;
+		sz = 0.25;
 		
-		// Render the viewport
+		rotationXX_ON = 0;
 		
-		drawScene();  
-	};      
+		rotationXX_DIR = 1;
+		
+		rotationXX_SPEED = 1;
 
-	document.getElementById("face-culling-button").onclick = function(){
+		rotationYY_ON = 0;
 		
-		if( gl.isEnabled( gl.CULL_FACE ) )
-		{
-			gl.disable( gl.CULL_FACE );
-		}
-		else
-		{
-			gl.enable( gl.CULL_FACE );
-		}
+		rotationYY_DIR = 1;
 		
-		// Render the viewport
+		rotationYY_SPEED = 1;
+
+		rotationZZ_ON = 0;
 		
-		drawScene();  
+		rotationZZ_DIR = 1;
+		
+		rotationZZ_SPEED = 1;
 	};      
 }
 
@@ -665,17 +782,11 @@ function initWebGL( canvas ) {
 		
 		primitiveType = gl.TRIANGLES;
 		
-		// DEFAULT: Face culling is DISABLED
+		// DEFAULT: The Depth-Buffer is DISABLED
 		
-		// Enable FACE CULLING
+		// Enable it !
 		
-		gl.enable( gl.CULL_FACE );
-		
-		// DEFAULT: The BACK FACE is culled!!
-		
-		// The next instruction is not needed...
-		
-		gl.cullFace( gl.BACK );
+		gl.enable( gl.DEPTH_TEST );
 		
 	} catch (e) {
 	}
@@ -694,11 +805,11 @@ function runWebGL() {
 
 	shaderProgram = initShaders( gl );
 	
-	setEventListeners();
+	setEventListeners( canvas );
 	
 	initBuffers();
 	
-	drawScene();    
+	tick();		// A timer controls the rendering / animation    
 
 	outputInfos();
 }
