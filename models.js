@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //
 //  Functions for processing triangle mesh models
-//
+//   
 //  J. Madeira - Oct. 2015
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -16,7 +16,7 @@ function recSubdivisionMidPoint( v1, v2, v3,
 								 coordsArray,
 								 colorsArray,
 								 recursionDepth ) {
-
+ 
 	// Recursive midpoint subdivision of one triangle
 	
 	if( recursionDepth == 0 ) {
@@ -257,7 +257,7 @@ function moveToSphericalSurface( coordsArray ) {
 //  And associating to every vertex
 //
 
-function computeVertexNormals( coordsArray, normalsArray ) {
+function computeVertexNormals( coordsArray, normalsArray ) {  
 	
 	// Clearing the new normals array
 	

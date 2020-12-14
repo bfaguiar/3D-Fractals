@@ -926,7 +926,7 @@ function getVertices( flag) {
 		var a = [ -1.0,  0.0, -0.707 ];
     	var b = [  0.0,  1.0,  0.707 ]; 
     	var c = [  1.0,  0.0, -0.707 ];
-		var d = [  0.0, -1.0,  0.707 ];
+		var d = [  0.0, -1.0,  0.707 ];  
 
 		return [a, b, c, d];
 	}
@@ -961,7 +961,7 @@ function computeSierpinskiGasket() {
 
 	divideSierpinskiGasket(a, b, c, d, numLevels);
 	vertices = flatten(vertices);
-	computeVertexNormals(vertices, normals); 
+	computeVertexNormals(vertices, normals);  
 }  
  
 function divideSierpinskiGasket(a, b, c, d, n) {
@@ -980,7 +980,7 @@ function divideSierpinskiGasket(a, b, c, d, n) {
 		var bd = computeMidPoint(b, d);
 		var cd = computeMidPoint(c, d); 
 		
-		n--;
+		n--; 
 
 		divideSierpinskiGasket( a, ab, ac, ad, n );
 		divideSierpinskiGasket( ab, b, bc, bd, n );
@@ -1015,10 +1015,10 @@ function computeMengerSponge() {
 
 		divideMengerSponge(a, b, c, d, e, f, g, h, numLevels);
 		vertices = flatten(vertices);
-		computeVertexNormals(vertices, normals)
+		computeVertexNormals(vertices, normals) ;
 
 }
-
+ 
 function divideMengerSponge(a, b, c, d, e, f, g, h, n) {
 
 	if (n < 1) {
@@ -1060,7 +1060,7 @@ function divideMengerSponge(a, b, c, d, e, f, g, h, n) {
 		var fg = interpolate(f, g, 1/3);
 		var gf = interpolate(f, g, 2/3);
 		var eh = interpolate(e, h, 1/3);
-		var he = interpolate(e, h, 2/3);  
+		var he = interpolate(e, h, 2/3);   
 
 		n--;
 
@@ -1361,4 +1361,4 @@ function divideMengerSponge(a, b, c, d, e, f, g, h, n) {
 }   
 
 //  			Avenged Sevenfold 1rightcenter center          
-// 1   não sei, diria que tinha uns 25% deexistem muitos aspectos em que as caracteristas  
+// 1   não sei, diria que tinha uns 25% deexistem muitos aspectos em que as caracteristas   

@@ -119,7 +119,7 @@ var setupWebGL = function(canvas, opt_attribs) {
     showLink(OTHER_PROBLEM);
   }
   return context;
-};
+}; 
 
 /**
  * Creates a webgl context.
