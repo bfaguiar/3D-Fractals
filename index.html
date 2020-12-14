@@ -1,578 +1,212 @@
 <!DOCTYPE html>
+<html lang="en">
 
-<html>
+  <!--
+	3D Fractals
+	Bruno Aguiar, Paulo Sousa
+  -->
 
-<head>
-	
-<!--
-Fractals 3D
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700" rel="stylesheet">
 
-Cristiano Vagos
-Miguel Bras
-2017
+    <title>3D Fractals</title>
 
--->
-	
-<title>Fractals 3D&mdash; Cristiano Vagos - Miguel Martins</title>
+    <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 
-<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+    <!--
 
+    The simple vertex and fragment shaders.
 
-<script id="shader-vs" type="x-shader/x-vertex">
-	
-    attribute vec3 vPosition;
+    Using a vertex coordinate buffer and a vertex colour buffer.
 
-    uniform mat4 uMVMatrix;
+    Passing the Model-View Matrix and the Projection Matrix. 
 
-    uniform mat4 uPMatrix;
-    
-    varying vec4 fColor;
-    
-    // For the Phong Illumination Model - NEW
-    
-    attribute vec3 vNormal;
-    
-    uniform vec4 viewerPosition;
-	
-    // NEW - Array of lights
-    
-	#define MAX_LIGHTS 5
+    -->
 
-	uniform int numLights;
+    <script id="shader-vs" type="x-shader/x-vertex">
+      
+      attribute vec3 aVertexPosition;
 
-	uniform struct Light {
-		
-		int isOn;
-	
-		vec4 position;
-   
-		mat4 lightSourceMatrix; // for animation
+      attribute vec3 aVertexColor;
+      
+      uniform mat4 uMVMatrix;
 
-		vec3 intensities; //a.k.a the color of the light
-   
-		vec3 ambientIntensities;
-			
-	} allLights[MAX_LIGHTS];
-    
-    // NEW - The material properties
+      uniform mat4 uPMatrix;
 
-	uniform vec3 k_ambient;
-	
-	uniform vec3 k_diffuse;
-	
-	uniform vec3 k_specular;
-	
-    uniform float shininess;
-        
+      varying vec4 vertexColor;
+      
+      void main(void) {
+      
+      // To allow seeing the points drawn
+      
+      gl_PointSize = 5.0;
+      
+      // Just converting the (x,y,z) vertices to Homogeneous Coord.
+      
+      // And multiplying by the Projection and the Model-View matrix
+      
+          gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+          
+          // Converting the RGB color value to RGBA
+          
+          vertexColor = vec4(aVertexColor, 1.0);
+      }
+    </script>
+
+    <script id="shader-fs" type="x-shader/x-fragment">
+
+    precision mediump float;
+
+    varying vec4 vertexColor;
+
     void main(void) {
-		
-		// To allow seeing the points drawn
-		
-		gl_PointSize = 5.0;
-		
-		// Just converting the (x,y,z) vertices to Homogeneous Coord.
-		
-		// And multiplying by the Projection and the Model-View matrix
-		
-        gl_Position = uPMatrix * uMVMatrix * vec4(vPosition, 1.0);
-        
-        // Phong Illumination Model
-        
-        // pos is vertex position after applying the global transformation
-    
-        vec3 pos = (uMVMatrix * vec4(vPosition, 1.0)).xyz;
-    
-		// NEW - ITERATING THROUGH ALL LIGHT SOURCES
+      
+      // Using the passed vertex color
+      
+      gl_FragColor = vertexColor;
+    }
 
-		fColor = vec4(0.0, 0.0, 0.0, 0.0);	// To add all illumination components
-		 
-		// THE FOR LOOP NEEDS A STOPPING CONSTANT VALUE
-		
-		for( int i = 0; i < MAX_LIGHTS; i++ ) 
-		{
-			if( i == numLights )
-			
-				break;
-				
-			// Switched off ?
-			
-			if( allLights[i].isOn == 0 )
-			
-				continue;
-				
-			// Ambient component is constant for each light source
-        
-			vec4 ambient = vec4( k_ambient * allLights[i].ambientIntensities, 1.0 );
-	   
-			fColor += ambient;
-		
-           // vector from vertex position to light source
-    
-           vec3 L;
-        
-           // check for directional light
-    
-           if(allLights[i].position.w == 0.0) 
-        
-				L = normalize( (allLights[i].lightSourceMatrix * allLights[i].position).xyz );
-        
-           else 
-        
-			    L = normalize( (allLights[i].lightSourceMatrix * allLights[i].position).xyz - pos );
-			
-		   // Vector from the vertex position to the eye
-		
-		   vec3 E;
-		
-		   // The viewer is at the origin or at an indefinite distance
-		   // on the ZZ axis
-		
-		   if(viewerPosition.w == 1.0) 
-        
-			   // At the origin
-			
-			   E = -normalize( pos );
-        
-           else 
-        
-			   // On the ZZ axis
-			
-			   E = vec3(0,0,1);
-		    
-           // Halfway vector
-    
-           vec3 H = normalize( L + E );
+    </script>
 
-           // Transform vertex normal into eye coordinates
-    
-           vec4 N = normalize( uMVMatrix * vec4(vNormal, 0.0));
+    <!-- The JS files -->
 
-           // Compute terms in the illumination equation
-        
-		   // Diffuse component 
-		
-		   float dotProductLN = L[0] * N[0] + L[1] * N[1] + L[2] * N[2]; 
-		
-           float cosNL = max( dotProductLN, 0.0 );
-    
-           vec4  diffuse = vec4( k_diffuse * cosNL * allLights[i].intensities, 1.0 );
-        
-           // Specular component
+    <!-- Some useful functions for browser compatibility -->
 
-           float dotProductNH = N[0] * H[0] + N[1] * H[1] + N[2] * H[2]; 
-		
-		   float cosNH = pow( max( dotProductNH, 0.0 ), shininess );
-    
-           vec4  specular = vec4( k_specular * cosNH * allLights[i].intensities, 1.0 );
-    
-           if( dotProductLN < 0.0 ) {
-	
-		      specular = vec4(0.0, 0.0, 0.0, 1.0);
-           } 
+    <script type="text/javascript" src="webgl-utils.js"></script>
 
-		   // Adding the components
-		
-           fColor += diffuse + specular;
-	   }
-	}
-    
-</script>
+    <!-- Handling vectors and matrices -->
 
-<script id="shader-fs" type="x-shader/x-fragment">
+    <script type="text/javascript" src="maths.js"></script>
 
-	precision mediump float;
-	
-	varying vec4 fColor;
-	
-	void main(void) {
-		
-		// Using the passed vertex color
-		
-		gl_FragColor = fColor;
-	}
+    <!-- WebGL code -->
 
-</script>
+    <script type="text/javascript" src="initShaders.js"></script>
 
+    <script type="text/javascript" src="fractals.js"></script>
 
-<!-- Bootstrap Stuff -->
-<script src="js/jquery.min.js"></script>
-<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
-<script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="models.js"></script>
 
-<!-- Bootstrap Toggle Library -->
-<link rel="stylesheet" href="css/bootstrap-toggle.min.css">
-<script src="js/bootstrap-toggle.min.js"></script>
+    <script type="text/javascript" src="lightSources.js"></script>
 
-<!-- Custom CSS -->
-<link rel="stylesheet" href="css/custom.css">
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
-<!-- jsColor Library -->
-<script src="js/jscolor.js"></script>
-
-<!--
-
-The vertex and fragment shaders.
-
-NEW VERTEX SHADER!
-
-The fragment shader is the same simple one.
-
--->
-
-<script id="shader-vs" type="x-shader/x-vertex">
-	
-    attribute vec3 vPosition;
-
-    uniform mat4 uMVMatrix;
-
-    uniform mat4 uPMatrix;
-    
-    varying vec4 fColor;
-    
-    // For the Phong Illumination Model - NEW
-    
-    attribute vec3 vNormal;
-
-    uniform vec4 lightPosition;
-    
-    uniform vec4 viewerPosition;
-    
-    // The light intensity multiplied by the material reflection coefficients
-
-	uniform vec3 ambientProduct;
-	
-	uniform vec3 diffuseProduct;
-	
-	uniform vec3 specularProduct;
-	
-    uniform float shininess;
-        
-    void main(void) {
-		
-		// To allow seeing the points drawn
-		
-		gl_PointSize = 5.0;
-		
-		// Just converting the (x,y,z) vertices to Homogeneous Coord.
-		
-		// And multiplying by the Projection and the Model-View matrix
-		
-        gl_Position = uPMatrix * uMVMatrix * vec4(vPosition, 1.0);
-        
-        // Phong Illumination Model
-        
-        // pos is vertex position after applying the global transformation
-    
-        vec3 pos = (uMVMatrix * vec4(vPosition, 1.0)).xyz;
-    
-        // vector from vertex position to light source
-    
-        vec3 L;
-        
-        // check for directional light
-    
-        if(lightPosition.w == 0.0) 
-        
-			L = normalize( lightPosition.xyz );
-        
-        else 
-        
-			L = normalize( lightPosition.xyz - pos );
-			
-		// Vector from the vertex position to the eye
-		
-		vec3 E;
-		
-		// The viewer is at the origin or at an indefinite distance
-		// on the ZZ axis
-		
-		if(viewerPosition.w == 1.0) 
-        
-			// At the origin
-			
-			E = -normalize( pos );
-        
-        else 
-        
-			// On the ZZ axis
-			
-			E = vec3(0,0,1);
-		    
-        // Halfway vector
-    
-        vec3 H = normalize( L + E );
-
-        // Transform vertex normal into eye coordinates
-    
-        vec4 N = normalize( uMVMatrix * vec4(vNormal, 0.0));
-
-        // Compute terms in the illumination equation
-        
-        // Ambient component is constant
-        
-		vec4 ambient = vec4( ambientProduct, 1.0 );
-		
-		// Diffuse component 
-		
-		float dotProductLN = L[0] * N[0] + L[1] * N[1] + L[2] * N[2]; 
-		
-        float cosNL = max( dotProductLN, 0.0 );
-    
-        vec4  diffuse = vec4( diffuseProduct * cosNL, 1.0 );
-        
-        // Specular component
-
-        float dotProductNH = N[0] * H[0] + N[1] * H[1] + N[2] * H[2]; 
-		
-		float cosNH = pow( max( dotProductNH, 0.0 ), shininess );
-    
-        vec4  specular = vec4( specularProduct * cosNH, 1.0 );
-    
-        if( dotProductLN < 0.0 ) {
-	
-			specular = vec4(0.0, 0.0, 0.0, 1.0);
-        } 
-
-		// Adding the 3 components
-		
-        fColor = ambient + diffuse + specular;
-	}
-    
-</script>
-
-<script id="shader-fs" type="x-shader/x-fragment">
-
-	precision mediump float;
-	
-	varying vec4 fColor;
-	
-	void main(void) {
-		
-		// Using the passed vertex color
-		
-		gl_FragColor = fColor;
-	}
-
-</script>
-
-<!-- The JS files -->
-
-<!-- Some useful functions for browser compatibility -->
-
-<script type="text/javascript" src="webgl-utils.js"></script>
-
-<!-- Handling vectors and matrices -->
-
-<script type="text/javascript" src="maths.js"></script>
-
-<!-- Processing triangle mesh models -->
-
-<script type="text/javascript" src="models.js"></script>
-
-<!-- Creating the light sources -->
-
-<script type="text/javascript" src="lightSources.js"></script>
-
-
-<!-- WebGL code -->
-
-<script type="text/javascript" src="initShaders.js"></script>
-
-<script type="text/javascript" src="fractals.js"></script>
-
-</head>
+    <!-- Additional CSS Files -->
+    <link rel="stylesheet" href="assets/css/fontawesome.css">
+    <link rel="stylesheet" href="assets/css/templatemo-style.css">
+    <link rel="stylesheet" href="assets/css/owl.css">
+  </head>
 
 <body onload="runWebGL();">
 
-	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-		<div class="container-fluid">
-			<div class="navbar-header">
-				<a class="navbar-brand" href="#">Fractals 3D</a>
-				<p class="navbar-text">CV Project 2017/2018</p>
-			</div>
-			<p class="navbar-text navbar-right" style="padding-right: 10px;">Cristiano Vagos, Miguel Br&aacute;s</p>
-		</div>
-	</nav>
+    <!-- Wrapper -->
+    <div id="wrapper" style="background-color:#3f414e">
+      <!-- Main -->
+      
+        <div id="main">
+          <div class="inner">
+              <!-- Header -->
+              <header id="header" style="margin-bottom: 10px;">
+                <div class="logo">
+                  <a href="index.html">3D Fractals</a>
+                </div>
+              </header>
+              <div class="row" style="margin-top: 5px; margin-left: -120px;" >
+            
+                <div class="col-md-6 ">
+                  <!------ CANVAS ----------->
+                  <canvas id="my-canvas" style="margin-top:10px; margin-bottom:10px; margin-left:45px; margin-right:5px;border:1px solid #3f414e;" width="500" height="500"></canvas>
+                  <!------------------------->
+                  <div class="row" style="margin-top:-10px; margin-left: 55px;">
+                    <h7 style="color: black;">Iteractions: <a id="num-iterations"></a></h7>
+                    <button class="border-radius-button" id="add-recursion-button" style="width: 10px; font-size: 8pt;margin-left: 10px; color: white;">-</button>
+                    <button class="border-radius-button" id="reduce-recursion-button" style="width: 30px; font-size: 8pt;margin-left: 0px; color: white;">+</button>
+                  </div>
+                </div>
+                <div class="col-md-5 card" style="margin-top: 30px; margin-left: 60px; background-color: #3f414e; border-color:  #3f414e ;">
+                    <div class="row">
+                      <div class="col-md-12" style="margin-top: 30px;">
+                        <h5 style="color: black;">Rotation XX</h5>
+                        <div class="row">
+                          <button id="XX-on-off-button" class="button" style="width: 90px; font-size: 7pt;margin-left: 20px; color: white;">On / Off</button>
+                          <button id="XX-direction-button" class="button" style="width: 125px; font-size: 7pt; color: white;">Change  Direction</button>
+                          <button id="XX-slower-button" class="button" style="width: 90px; font-size: 7pt; color: white;">- Speed</button>
+                          <button id="XX-faster-button" class="button" style="width: 90px; font-size: 7pt; color: white;">+ Speed</button>
+                      </div>
+                    </div>
+                      <div class="col-md-12" style="margin-top:20px">
+                        <h5 style="color: black;">Rotation YY</h5>
+                        <div class="row">
+                          <button id="YY-on-off-button" class="button" style="width: 90px; font-size: 7pt;margin-left: 20px; color: white;">On / Off</button>
+                          <button id="YY-direction-button" class="button" style="width: 125px; font-size: 7pt; color: white;">Change  direction</button>
+                          <button id="YY-slower-button" class="button" style="width: 90px; font-size: 7pt; color: white;">- Speed</button>
+                          <button id="YY-faster-button" class="button" style="width: 90px; font-size: 7pt; color: white;">+ Speed</button>
+                      </div>
+                     </div>
+                     <div class="col-md-12" style="margin-top:20px">
+                      <h5 style="color: black;">Rotation ZZ</h5>
+                      <div class="row">
+                        <button id="ZZ-on-off-button" class="button" style="width: 90px; font-size: 7pt;margin-left: 20px; color: white;">On / Off</button>
+                        <button id="ZZ-direction-button" class="button" style="width: 125px; font-size: 7pt; color: white;">Change  direction</button>
+                        <button id="ZZ-slower-button" class="button" style="width: 90px; font-size: 7pt; color: white;">- Speed</button>
+                        <button id="ZZ-faster-button" class="button" style="width: 90px; font-size: 7pt; color: white;">+ Speed</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="border-radius-button" style="margin-top: 100px; align-self: center; width: 120px; color: white;">
+                    <a id="reset-button">Reset</a>
+                  </div>
+                </div>
+              </div> 
+          </div>
+        </div>
 
-	<div class="container">
-		<div class="row">
-			<div class="col-md-6">
-				<div class="row" style="padding-top: 50px; padding-bottom: 20px;">
-					<h2>Welcome to our WebGL project!</h2>
-					<p>Drag the mouse on the canvas for moving the object, and drag the mouse wheel for scaling.</p>
-					<p>Control the canvas on the right with the following controls:</p>
-				</div>
-				<div class="row" style="padding-top: 5px; padding-bottom: 5px; margin-right: 10px;">
-					<div class="card">
-						<div class="card-content" style="width: 100%; padding-bottom: 20px;">
-							<div class="card-header-blue">
-								<h4 style="margin-left: 10px;">XX Rotation</h4>
-							</div>
-							<div class="card-body">
-								<div class="col-sm-4">
-									<p>Off/On:</p>
-									<div class="material-switch">
-										<input id="XX-on-off-button" type="checkbox"/>
-										<label for="XX-on-off-button" class="label-default"></label>
-									</div>
-								</div>
-								<div class="col-sm-4">
-									<p>Change Direction:</p>
-									<div class="material-switch">
-										<input id="XX-direction-button" type="checkbox"/>
-										<label for="XX-direction-button" class="label-default"></label>
-									</div>
-								</div>
-								<div class="col-sm-4">
-									<p>Change Speed:</p>
-									<button type="button" class="btn btn-primary btn-sm" id="XX-slower-button" aria-pressed="false" autocomplete="off">
-											Slower
-									</button>
-									
-									<button type="button" class="btn btn-primary btn-sm" id="XX-faster-button" aria-pressed="false" autocomplete="off">
-										Faster
-									</button>
-								</div>
-								
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="row" style="padding-top: 15px; padding-bottom: 5px; margin-right: 10px;">
-					<div class="card">
-						<div class="card-content" style="width: 100%; padding-bottom: 30px;">
-							<div class="card-header-blue">
-								<h4 style="margin-left: 10px;">YY Rotation</h4>
-							</div>
-							<div class="card-body">
-								<div class="col-sm-4">
-									<p>Off/On:</p>
-									<div class="material-switch">
-										<input id="YY-on-off-button" type="checkbox"/>
-										<label for="YY-on-off-button" class="label-default"></label>
-									</div>
-								</div>
-								<div class="col-sm-4">
-									<p>Change Direction:</p>
-									<div class="material-switch">
-										<input id="YY-direction-button" type="checkbox"/>
-										<label for="YY-direction-button" class="label-default"></label>
-									</div>
-								</div>
-								<div class="col-sm-4">
-									<p>Change Speed:</p>
-									<button type="button" class="btn btn-primary btn-sm" id="YY-slower-button" aria-pressed="false" autocomplete="off">
-											Slower
-									</button>
-									
-									<button type="button" class="btn btn-primary btn-sm" id="YY-faster-button" aria-pressed="false" autocomplete="off">
-										Faster
-									</button>
-								</div>
-								
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="row" style="padding-top: 15px; padding-bottom: 5px; margin-right: 10px;">
-					<div class="card">
-						<div class="card-content" style="width: 100%; padding-bottom: 20px;">
-							<div class="card-header-blue">
-								<h4 style="margin-left: 10px;">ZZ Rotation</h4>
-							</div>
-							<div class="card-body">
-								<div class="col-sm-4">
-									<p>Off/On:</p>
-									<div class="material-switch">
-										<input id="ZZ-on-off-button" type="checkbox"/>
-										<label for="ZZ-on-off-button" class="label-default"></label>
-									</div>
-								</div>
-								<div class="col-sm-4">
-									<p>Change Direction:</p>
-									<div class="material-switch">
-										<input id="ZZ-direction-button" type="checkbox"/>
-										<label for="ZZ-direction-button" class="label-default"></label>
-									</div>
-								</div>
-								<div class="col-sm-4">
-									<p>Change Speed:</p>
-									<button type="button" class="btn btn-primary btn-sm" id="ZZ-slower-button" aria-pressed="false" autocomplete="off">
-										Slower
-									</button>
-									
-									<button type="button" class="btn btn-primary btn-sm" id="ZZ-faster-button" aria-pressed="false" autocomplete="off">
-										Faster
-									</button>
-								</div>
-								
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="row" style="padding-top: 20px; padding-bottom: 5px; margin-right: 10px;">
-					<div class="card">
-						<div class="card-content" style="width: 100%; padding-bottom: 20px;">
-							<div class="card-header-blue">
-								<h4 style="margin-left: 10px;">Other canvas controls</h4>
-							</div>
-							<div class="card-body">
-								<p>Choose the <b>projection type</b>:
-										
-								<select id="projection-selection">
-									<option value="0">Orthogonal Projection</option>
-									<option value="1">Perspective Projection</option>
-								</select>
+      <!-- Sidebar -->
+        <div id="sidebar">
+          <div class="inner">
+            <!-- Menu -->
+            <nav id="menu">
+              <ul>
+                <li><a id="SierpinskiGasket">Sierpinski Gasket</a></li>
+                <li><a id="MengerSponge">Menger Sponge</a></li>
+              </ul>
+              <ul><br><br><br></ul>
+              <ul>  
+                <li>
+                  <span class="opener">Projection Type</span>
+                  <ul>
+                    <li><a id="orthogonal">Orthogonal projection</a></li>
+                    <li><a id="perspective">Perspective projection</a></li>
+                  </ul>
+                </li>
+                <li>
+                  <span class="opener">Rendering Mode</span>
+                  <ul>
+                    <li><a id="filled">Filled triangles</a></li>
+                    <li><a id="wireframe">Wireframes</a></li>
+                    <li><a id="vertices">Vertices</a></li>
+                  </ul>
+                </li>
+              </ul>
+              <ul><br><br><br><br></ul>
+            </nav>
+          </div>
+        </div>
+    </div>
 
-								<p>Choose the <b>rendering mode</b>:
-									
-								<select id="rendering-mode-selection">
-									<option value="0">Filled Triangles</option>
-									<option value="1">Wireframe</option>
-									<option value="2">Vertices</option>
-								</select>
-								
-								<p>Reset all configurations:</p>
-								
-								<button type="button" class="btn btn-primary btn-sm" id="reset-button" aria-pressed="false" autocomplete="off">
-									Reset
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="col-md-5 col-md-offset-1" data-spy="affix" data-offset-left="400" onmouseover="disableScroll();" onmouseout="enableScroll();">
-				<div class="row" style="padding-top: 90px;">
-					<p>Choose the <b>fractal</b> to be displayed above:
-						
-					<select id="fractal-selection">
-						<option value="0">Sierpinski Gasket</option>
-						<option value="1">Sierpinski Cube/Menger Sponge</option>
-					</select>
-					
-					<p>Change its color:
-						<input class="jscolor" onchange="updateColor(this.jscolor)" value="337AB7">
-					</p>
-				</div>
-				<div class="row" style="margin-top: 20px;">
-					<canvas id="my-canvas" style="border:1px solid #000000;" background="#000000" width="350" height="350"></canvas>							
-				</div>
-				<div class="row" style="margin-top: 10px;">
-					<p>Current number of iterations:
-						<span id="num-iterations">0</span>
-					</p>
-					<button type="button" class="btn btn-primary btn-sm" id="reduce-recursion-button" aria-pressed="false" autocomplete="off">
-						Decrease
-					</button>
-					<button type="button" class="btn btn-primary btn-sm" id="add-recursion-button" aria-pressed="false" autocomplete="off">
-						Increase
-					</button>
-				</div>
-			</div>
-		</div>
-	</div>
+    <!-- Scripts -->
+    <!-- Bootstrap core JavaScript -->
+      <script src="vendor/jquery/jquery.min.js"></script>
+      <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
-</body>
-
+      <script src="assets/js/browser.min.js"></script>
+      <script src="assets/js/breakpoints.min.js"></script>
+      <script src="assets/js/transition.js"></script>
+      <script src="assets/js/owl-carousel.js"></script>
+      <script src="assets/js/custom.js"></script>
+  </body>
 </html>

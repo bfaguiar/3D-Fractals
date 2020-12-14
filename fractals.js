@@ -1,10 +1,5 @@
 
-//----------------------------------------------------------------------------
-//
 // Global Variables
-//
-//----------------------------------------------------------------------------
-
 
 var numLevels = 0;
 
@@ -189,94 +184,86 @@ function drawModel( angleXX, angleYY, angleZZ,
 	mvMatrix,
 	primitiveType ) {
 
-// The the global model transformation is an input
+	// The the global model transformation is an input
 
-// Concatenate with the particular model transformations
+	// Concatenate with the particular model transformations
 
-// Pay attention to transformation order !!
+	// Pay attention to transformation order !!
 
-mvMatrix = mult( mvMatrix, translationMatrix( tx, ty, tz ) );
-		 
-mvMatrix = mult( mvMatrix, rotationZZMatrix( angleZZ ) );
+	mvMatrix = mult( mvMatrix, translationMatrix( tx, ty, tz ) );
+			
+	mvMatrix = mult( mvMatrix, rotationZZMatrix( angleZZ ) );
 
-mvMatrix = mult( mvMatrix, rotationYYMatrix( angleYY ) );
+	mvMatrix = mult( mvMatrix, rotationYYMatrix( angleYY ) );
 
-mvMatrix = mult( mvMatrix, rotationXXMatrix( angleXX ) );
+	mvMatrix = mult( mvMatrix, rotationXXMatrix( angleXX ) );
 
-mvMatrix = mult( mvMatrix, scalingMatrix( sx, sy, sz ) );
-		 
-// Passing the Model View Matrix to apply the current transformation
+	mvMatrix = mult( mvMatrix, scalingMatrix( sx, sy, sz ) );
+			
+	// Passing the Model View Matrix to apply the current transformation
 
-var mvUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+	var mvUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
 
-gl.uniformMatrix4fv(mvUniform, false, new Float32Array(flatten(mvMatrix)));
+	gl.uniformMatrix4fv(mvUniform, false, new Float32Array(flatten(mvMatrix)));
 
-// Associating the data to the vertex shader
+	// Associating the data to the vertex shader
 
-// This can be done in a better way !!
+	// This can be done in a better way !!
 
-// Vertex Coordinates and Vertex Normal Vectors
+	// Vertex Coordinates and Vertex Normal Vectors
 
-initBuffers();
+	initBuffers();
 
-// Material properties
+	// Material properties
 
-gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_ambient"), 
-flatten(kAmbi) );
+	gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_ambient"), 
+	flatten(kAmbi) );
 
-gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_diffuse"),
-flatten(kDiff) );
+	gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_diffuse"),
+	flatten(kDiff) );
 
-gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_specular"),
-flatten(kSpec) );
+	gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_specular"),
+	flatten(kSpec) );
 
-gl.uniform1f( gl.getUniformLocation(shaderProgram, "shininess"), 
-nPhong );
+	gl.uniform1f( gl.getUniformLocation(shaderProgram, "shininess"), 
+	nPhong );
 
-// Light Sources
+	// Light Sources
 
-var numLights = lightSources.length;
+	var numLights = lightSources.length;
 
-gl.uniform1i( gl.getUniformLocation(shaderProgram, "numLights"), 
-numLights );
+	gl.uniform1i( gl.getUniformLocation(shaderProgram, "numLights"), 
+	numLights );
 
-//Light Sources
+	//Light Sources
 
-for(var i = 0; i < lightSources.length; i++ )
-{
-gl.uniform1i( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].isOn"),
-lightSources[i].isOn );
+	for(var i = 0; i < lightSources.length; i++ )
+	{
+	gl.uniform1i( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].isOn"),
+	lightSources[i].isOn );
 
-gl.uniform4fv( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].position"),
-flatten(lightSources[i].getPosition()) );
+	gl.uniform4fv( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].position"),
+	flatten(lightSources[i].getPosition()) );
 
-gl.uniform3fv( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].intensities"),
-flatten(lightSources[i].getIntensity()) );
-}
+	gl.uniform3fv( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].intensities"),
+	flatten(lightSources[i].getIntensity()) );
+	}
 
-// Drawing 
+	// Drawing 
 
-// primitiveType allows drawing as filled triangles / wireframe / vertices
+	// primitiveType allows drawing as filled triangles / wireframe / vertices
 
-if( primitiveType == gl.LINE_LOOP ) {
+	if( primitiveType == gl.LINE_LOOP ) {
+				
+		var i;
 
-// To simulate wireframe drawing!
+		for( i = 0; i < triangleVertexPositionBuffer.numItems / 3; i++ ) {
 
-// No faces are defined! There are no hidden lines!
-
-// Taking the vertices 3 by 3 and drawing a LINE_LOOP
-
-var i;
-
-for( i = 0; i < triangleVertexPositionBuffer.numItems / 3; i++ ) {
-
-gl.drawArrays( primitiveType, 3 * i, 3 ); 
-}
-}	
-else {
-gl.drawArrays(primitiveType, 0, triangleVertexPositionBuffer.numItems); 
-
-}	
+			gl.drawArrays( primitiveType, 3 * i, 3 ); 
+		}
+	} else {
+		gl.drawArrays(primitiveType, 0, triangleVertexPositionBuffer.numItems); 
+	}	
 }
 
 //----------------------------------------------------------------------------
@@ -305,13 +292,11 @@ function drawScene() {
 		
 		globalTz = 0.0;
 		
-		// NEW --- The viewer is on the ZZ axis at an indefinite distance
+		// The viewer is on the ZZ axis at an indefinite distance
 		
 		pos_Viewer[0] = pos_Viewer[1] = pos_Viewer[3] = 0.0;
 		
 		pos_Viewer[2] = 1.0;  
-		
-		// TO BE DONE !
 		
 		// Allow the user to control the size of the view volume
 	}
@@ -335,8 +320,6 @@ function drawScene() {
 		
 		pos_Viewer[3] = 1.0;  
 		
-		// TO BE DONE !
-		
 		// Allow the user to control the size of the view volume
 	}
 	
@@ -346,7 +329,7 @@ function drawScene() {
 	
 	gl.uniformMatrix4fv(pUniform, false, new Float32Array(flatten(pMatrix)));
 	
-	// NEW --- Passing the viewer position to the vertex shader
+	// Passing the viewer position to the vertex shader
 	
 	gl.uniform4fv( gl.getUniformLocation(shaderProgram, "viewerPosition"),
         flatten(pos_Viewer) );
@@ -355,7 +338,7 @@ function drawScene() {
 	
 	mvMatrix = translationMatrix( 0, 0, globalTz );
 	
-	// NEW - Updating the position of the light sources, if required
+	// Updating the position of the light sources, if required
 	
 	// FOR EACH LIGHT SOURCE
 	    
@@ -377,7 +360,7 @@ function drawScene() {
 			}
 		}
 		
-		// NEW Passing the Light Souree Matrix to apply
+		// Passing the Light Souree Matrix to apply
 	
 		var lsmUniform = gl.getUniformLocation(shaderProgram, "allLights["+ String(i) + "].lightSourceMatrix");
 	
@@ -391,17 +374,13 @@ function drawScene() {
 	           tx, ty, tz,
 	           mvMatrix,
 	           primitiveType );
-	           
-	// NEW - Counting the frames
-	
 }
 
 //----------------------------------------------------------------------------
 //
-//  --- Animation
-//
+//  Animation
 
-// Animation --- Updating transformation parameters
+// Animation - Updating transformation parameters
 
 var lastTime = 0;
 
@@ -475,26 +454,18 @@ function tick() {
 	animate();
 }
 
-
-
-
 //----------------------------------------------------------------------------
 //
 //  User Interaction
 //
 
-function outputInfos(){
-    
-}
-
-//----------------------------------------------------------------------------
+function outputInfos(){ }
 
 //----------------------------------------------------------------------------
 
 // Handling mouse events
 
 // Adapted from www.learningwebgl.com
-
 
 var mouseDown = false;
 
@@ -503,7 +474,6 @@ var lastMouseX = null;
 var lastMouseY = null;
 
 function handleMouseDown(event) {
-    
     mouseDown = true;
   
     lastMouseX = event.clientX;
@@ -512,14 +482,11 @@ function handleMouseDown(event) {
 }
 
 function handleMouseUp(event) {
-
     mouseDown = false;
 }
 
 function handleMouseMove(event) {
-
     if (!mouseDown) {
-      
       return;
     } 
   
@@ -544,85 +511,48 @@ function handleMouseMove(event) {
 
 function setEventListeners(canvas) {
 
-	// Dropdown list
+	// Projection Type
 
-	var projectionList = document.getElementById("projection-selection");
-	
-	projectionList.addEventListener("click", function(){
-				
-		// Getting the selection
-		
-		var p = projectionList.selectedIndex;
-		
-		switch(p){
-			
-			case 0 : projectionType = 0;
-				break;
-			
-			case 1 : projectionType = 1;
-				break;
-		}  
-	});
+	document.getElementById("orthogonal").onclick = function(){
+		projectionType = 0;
+	};
+	document.getElementById("perspective").onclick = function(){
+		projectionType = 1;
+	};
 
+	// Rendering Type
 
-	// Dropdown list
+	document.getElementById("filled").onclick = function(){
+		primitiveType = gl.TRIANGLES;
+	};
+	document.getElementById("wireframe").onclick = function(){
+		primitiveType = gl.LINE_LOOP;
+	};
+	document.getElementById("vertices").onclick = function(){
+		primitiveType = gl.POINTS;
+	}; 
 	
-	var list = document.getElementById("rendering-mode-selection");
-	
-	list.addEventListener("click", function(){
-				
-		// Getting the selection
+	// Fractal Type
+
+	document.getElementById("SierpinskiGasket").onclick = function(){
+		fractal = 0;
+		computeSierpinskiGasket();
 		
-		var mode = list.selectedIndex;
-				
-		switch(mode){
-			
-			case 0 : primitiveType = gl.TRIANGLES;
-				break;
-			
-			case 1 : primitiveType = gl.LINE_LOOP;
-				break;
-			
-			case 2 : primitiveType = gl.POINTS;
-				break;
-		}
-	});
-	
-	var fractalList = document.getElementById("fractal-selection");
-	
-	fractalList.addEventListener("click", function(){
-				
-		// Getting the selection
-		
-		var mode = fractalList.selectedIndex;
-				
-		switch(mode){
-			
-			case 0 : 
-				fractal = 0;
-				computeSierpinskiGasket();
-				break;
-			
-			case 1 : 
-				fractal = 1;
-				computeMengerSponge();
-				break;
-		}
-		
-	});   
+	};
+	document.getElementById("MengerSponge").onclick = function(){
+		fractal = 1;
+		computeMengerSponge();
+	};
 
 	// Button events
 	
 	document.getElementById("XX-on-off-button").onclick = function(){
 		
 		// Switching on / off
-		
 		if( rotationXX_ON ) {
-			
 			rotationXX_ON = 0;
 		}
 		else {
-			
 			rotationXX_ON = 1;
 		}  
 	};
@@ -630,37 +560,29 @@ function setEventListeners(canvas) {
 	document.getElementById("XX-direction-button").onclick = function(){
 		
 		// Switching the direction
-		
 		if( rotationXX_DIR == 1 ) {
-			
 			rotationXX_DIR = -1;
 		}
 		else {
-			
 			rotationXX_DIR = 1;
 		}  
 	};      
 
 	document.getElementById("XX-slower-button").onclick = function(){
-		
 		rotationXX_SPEED *= 0.75;  
 	};      
 
 	document.getElementById("XX-faster-button").onclick = function(){
-		
 		rotationXX_SPEED *= 1.25;  
 	};      
 
 	document.getElementById("YY-on-off-button").onclick = function(){
 		
 		// Switching on / off
-		
 		if( rotationYY_ON ) {
-			
 			rotationYY_ON = 0;
 		}
 		else {
-			
 			rotationYY_ON = 1;
 		}  
 	};
@@ -668,37 +590,29 @@ function setEventListeners(canvas) {
 	document.getElementById("YY-direction-button").onclick = function(){
 		
 		// Switching the direction
-		
 		if( rotationYY_DIR == 1 ) {
-			
 			rotationYY_DIR = -1;
 		}
 		else {
-			
 			rotationYY_DIR = 1;
 		}  
 	};      
 
 	document.getElementById("YY-slower-button").onclick = function(){
-		
 		rotationYY_SPEED *= 0.75;  
 	};      
 
 	document.getElementById("YY-faster-button").onclick = function(){
-		
 		rotationYY_SPEED *= 1.25;  
 	};      
 
 	document.getElementById("ZZ-on-off-button").onclick = function(){
 		
 		// Switching on / off
-		
-		if( rotationZZ_ON ) {
-			
+		if( rotationZZ_ON ) {	
 			rotationZZ_ON = 0;
 		}
 		else {
-			
 			rotationZZ_ON = 1;
 		}  
 	};
@@ -706,24 +620,19 @@ function setEventListeners(canvas) {
 	document.getElementById("ZZ-direction-button").onclick = function(){
 		
 		// Switching the direction
-		
 		if( rotationZZ_DIR == 1 ) {
-			
 			rotationZZ_DIR = -1;
 		}
 		else {
-			
 			rotationZZ_DIR = 1;
 		}  
 	};      
 
 	document.getElementById("ZZ-slower-button").onclick = function(){
-		
 		rotationZZ_SPEED *= 0.75;  
 	};      
 
 	document.getElementById("ZZ-faster-button").onclick = function(){
-		
 		rotationZZ_SPEED *= 1.25;  
 	};      
 
@@ -808,16 +717,15 @@ function setEventListeners(canvas) {
 		}
 		initBuffers();
 	};
-
+	
+	// Handling the mouse
 	canvas.onmousedown = handleMouseDown;
     
     document.onmouseup = handleMouseUp;
     
 	document.onmousemove = handleMouseMove;
 	
-
 	canvas.addEventListener('wheel', function(event) {
-
 		if(event.deltaY > 0) {  
 			if (sx <= 0.1) { sx = 0.1; sy = 0.1; sz = 0.1; } 
 			else { sx -= 0.1; sy -= 0.1; sz -= 0.1; }
@@ -826,7 +734,6 @@ function setEventListeners(canvas) {
 			if (sx >= 1) { sx = 0.9; sy = 0.9; sz = 0.9; } 
 			else { sx += 0.1; sy += 0.1; sz += 0.1; }
 		}
-
 		drawScene();
 	}, false);
 }
@@ -986,7 +893,6 @@ function divideSierpinskiGasket(a, b, c, d, n) {
 		divideSierpinskiGasket( ab, b, bc, bd, n );
 		divideSierpinskiGasket( ac, bc, c, cd, n );
 		divideSierpinskiGasket( ad, bd, cd, d, n );
-
 	}  
 }
 
