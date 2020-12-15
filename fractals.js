@@ -149,6 +149,10 @@ function initBuffers() {
 		case 3:
 			computeKochSnowflake();
 			break;
+
+		case 4 :
+			computeCantorDust();
+			break;
 	}
 	
 	triangleVertexPositionBuffer = gl.createBuffer();
@@ -557,6 +561,12 @@ function setEventListeners(canvas) {
 		computeKochSnowflake();
 	}
 
+	document.getElementById("dust").onclick = function() {
+		fractal = 4;
+		computeCantorDust();
+	}
+
+
 
 
 	// Button events
@@ -703,8 +713,8 @@ function setEventListeners(canvas) {
 		rotationZZ_SPEED = 1;
 		
 		projectionType = 0;
-
-		kDiff = [ 0.2, 0.48, 0.72 ]; // COLOR
+		kDiff = [0.8, 0.8, 0.8]; //[ 0.2, 0.48, 0.72 ]; // COLOR
+		//kDiff = [ 0.2, 0.48, 0.72 ]; // COLOR
 
 		initBuffers();
 	};
@@ -729,6 +739,10 @@ function setEventListeners(canvas) {
 			case 3:
 				computeKochSnowflake();
 				break;
+
+				case 4:
+					computeCantorDust();
+					break;
 
 		}
 		initBuffers();
@@ -1310,7 +1324,7 @@ function computeKochSnowflake() {
 	vertices = flatten(vertices);
 	computeVertexNormals(vertices, normals);
 
-}   
+}     
 
 //var bool = true;}}
 
@@ -1367,7 +1381,7 @@ function drawJerusalemPattern(a, b, c, d, e, f, g, h, n) {
 			a, c, d,
 			e, h, g,
 			e, g, f,
-			h, d, c,
+			 h, d, c,
 			h, c, g,
 			e, f, b, 
 			e, b, a,
@@ -1387,9 +1401,9 @@ function drawJerusalemPattern(a, b, c, d, e, f, g, h, n) {
 		//console.log(small_large_side);
 		//console.log(jerusalem_distance); 
 
-		n--;
+		n--; 
 
-		var ab = interpolate(a, b, jerusalem_distance);
+		var  ab = interpolate(a, b, jerusalem_distance);
 		//console.log(ab);
 		var ba = interpolate(a, b, large_jd);
 		//console.log(ba);
@@ -1684,6 +1698,183 @@ interpolate(interpolate(fe, ba, small_jd), interpolate(gh, cd, small_jd), small_
 	}
 }  
 
+function computeCantorDust() {
+	var [a, b, c, d, e, f, g, h] = getVertices("Cubo");
+
+	vertices = [];
+	normals = [];
+	makeDust(a, b, c, d, e, f, g, h, numLevels);
+	vertices = flatten(vertices);
+	computeVertexNormals(vertices, normals);  	
+	
+}
+
+function makeDust(a, b, c, d, e, f, g, h, n) {
+	
+	if (n == 0) {
+		vertices.push(a, b, c, 
+			a, c, d,
+			e, h, g,
+			e, g, f,
+			 h, d, c,
+			h, c, g,
+			e, f, b, 
+			e, b, a,
+			f, g, c,
+			f, c, b,
+			e, a, d, 
+			e, d, h);  
+	}
+
+	else {
+		var side = distance2Points(c, d);
+		var small_jd = ((Math.sqrt(2)-1) * (Math.sqrt(2)-1)); //2/3
+		var  small = 1/3
+		var large = 2/3;
+		//console.log(side); _jdsmal 
+		//console.log(small_large_side);
+		//console.log(small); 
+
+		n--; 
+
+		var  ab = interpolate(a, b, small);
+		//console.log(ab);
+		var ba = interpolate(a, b, large);
+		//console.log(ba);
+		var ae = interpolate(a, e, small);
+		var ea = interpolate(a, e, large);
+		var bf = interpolate(b, f, small);
+		var fb = interpolate(b, f, large);
+		var ef = interpolate(e, f, small);
+		var fe = interpolate(e, f, large);
+		var dc = interpolate(d, c, small);
+		var cd = interpolate(d, c, large);
+		var cg = interpolate(c, g, small);
+		var gc = interpolate(c, g, large);
+		var hg = interpolate (h, g, small);
+		var gh = interpolate(h, g, large);
+		var dh = interpolate(d, h, small);
+		var hd = interpolate(d, h, large);
+		var ad = interpolate(a, d, small);
+		var da = interpolate(a, d, large);
+		var bc = interpolate(b, c, small);
+		var cb = interpolate(b, c, large);
+		var fg = interpolate(f, g, small);
+		var gf = interpolate(f, g, large);
+		var eh = interpolate(e, h, small);
+		var he = interpolate(e, h, large); 
+
+//front left bottom
+		makeDust(
+			a, 
+			ab, 
+			interpolate(ab, dc, small),
+			ad,
+
+			ae, 
+			interpolate(ae, bf, small), 
+			interpolate(interpolate(ab, dc, small), interpolate(ef, hg, small), small),
+			interpolate(ae, dh, small),
+			n
+		);
+
+		makeDust(
+			ba, 
+			b,
+			bc, 
+			interpolate(ad, bc, large),
+			
+			interpolate(ae, bf, large),
+			bf, 
+			interpolate(bf, cg, small),
+			interpolate(interpolate(bf, cg, small), interpolate(ae, dh, small), small),
+			n,
+		);
+
+		makeDust(
+			da, 
+			interpolate(da, cb, small),
+			dc ,  
+			d, 
+
+			interpolate(da, he, small),
+			interpolate(interpolate(da, he, small), interpolate(cb, gf, small), small),
+			interpolate(dh, cg, small),
+			dh,
+			n
+
+		);
+
+		makeDust(
+			interpolate(da, cb, large),
+			cb, 
+			c, 
+			cd, 
+
+			interpolate(interpolate(da,  he,  small), interpolate(cb, gf, small), large),
+			interpolate(cb, gf, small),
+			cg, 
+			interpolate(dh, cg, large),
+			n,
+		);
+
+
+		makeDust (
+			interpolate(da, he, large),
+			interpolate(interpolate(da, he, large), interpolate(cb, gf, large), small),
+			 interpolate(hd, gc, small),
+			 hd, 
+
+			 he, 
+			 interpolate(he, gf, small),
+			 hg, 
+			 h ,
+			 n, 
+		);
+
+		makeDust(
+				interpolate(interpolate(da, he, large), interpolate(cb, gf, large),  large),
+				interpolate(cb, gf, large),
+				gc, 
+				interpolate(hd, gc, large),
+
+				interpolate(he, gf, large),
+				gf, 
+				g, 
+				gh, 
+				n
+
+		);
+ 
+		makeDust (
+			ea, 
+			interpolate(ea, fb, small),
+			interpolate(interpolate(ea, hd, small), interpolate(fb, gc, small), small), 
+			interpolate(ea, hd, small),
+
+			e, ef, 
+			interpolate(eh, fg, small),
+			eh,
+			n
+			
+		);
+
+		makeDust( 
+			interpolate(ea, fb, large), 
+			fb, 
+			interpolate(fb, gc, small), 
+			  interpolate(interpolate(fb, gc, small), interpolate(ea, hd, small), small),
+			  
+			  fe,  
+			f,
+		fg,  
+		interpolate(eh, fg, large),
+		  
+
+		  n)
+
+	}
+}
 
 
 //  			Avenged Sevenfold 1rightcenter center           
