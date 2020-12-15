@@ -1,4 +1,9 @@
+/*
+	3D Fractals
+	Bruno Aguiar, Paulo Sousa
+*/
 
+//----------------------------------------------------------------------------
 // Global Variables
 
 var numLevels = 0;
@@ -24,25 +29,19 @@ var globalTz = 0.0;
 // The translation vector
 
 var tx = 0.0;
-
 var ty = 0.0;
-
 var tz = 0.0;
 
 // The rotation angles in degrees
 
 var angleXX = -30.0;
-
 var angleYY = 20.0;
-
 var angleZZ = 0.0;
 
 // The scaling factors
 
 var sx = 0.5;
-
 var sy = 0.5;
-
 var sz = 0.5;
 
 // GLOBAL Animation controls
@@ -81,13 +80,13 @@ var primitiveType = null;
 
 var projectionType = 0;
 
-// --- The viewer position
-
+// The viewer position
+ 
 var pos_Viewer = [ 0.0, 0.0, 0.0, 1.0 ];
 
-// --- Point Light Source Features
+// Point Light Source Features
 
-// Directional --- Homogeneous coordinate is ZERO
+// Directional - Homogeneous coordinate is ZERO
 
 var pos_Light_Source = [ 0.0, 0.0, 1.0, 0.0 ];
 
@@ -99,7 +98,7 @@ var int_Light_Source = [ 0.3, 0.0, 1.0 ];
 
 var ambient_Illumination = [ 0.3, 0.3, 0.3 ];
 
-// NEW --- Model Material Features
+// Model Material Features
 
 // Ambient coef.
 
@@ -125,13 +124,10 @@ var normals = [ ];
 
 
 //----------------------------------------------------------------------------
-//
 // The WebGL code
-//
 //----------------------------------------------------------------------------
-//
-//  Rendering
-//
+
+// Rendering
 
 // Handling the Vertex Coordinates and the Vertex Normal Vectors
 
@@ -144,6 +140,10 @@ function initBuffers() {
 	
 		case 1 : 
 			computeMengerSponge();
+			break;
+		
+		case 2 : 
+			computeKochSnowflake();
 			break;
 	}
 	
@@ -175,7 +175,6 @@ function initBuffers() {
 }
 
 //----------------------------------------------------------------------------
-
 //  Drawing the model
 
 function drawModel( angleXX, angleYY, angleZZ, 
@@ -184,81 +183,84 @@ function drawModel( angleXX, angleYY, angleZZ,
 	mvMatrix,
 	primitiveType ) {
 
-	// The the global model transformation is an input
+// The the global model transformation is an input
 
-	// Concatenate with the particular model transformations
+// Concatenate with the particular model transformations
 
-	// Pay attention to transformation order !!
+// Pay attention to transformation order !!
 
-	mvMatrix = mult( mvMatrix, translationMatrix( tx, ty, tz ) );
-			
-	mvMatrix = mult( mvMatrix, rotationZZMatrix( angleZZ ) );
+mvMatrix = mult( mvMatrix, translationMatrix( tx, ty, tz ) );
+		 
+mvMatrix = mult( mvMatrix, rotationZZMatrix( angleZZ ) );
 
-	mvMatrix = mult( mvMatrix, rotationYYMatrix( angleYY ) );
+mvMatrix = mult( mvMatrix, rotationYYMatrix( angleYY ) );
 
-	mvMatrix = mult( mvMatrix, rotationXXMatrix( angleXX ) );
+mvMatrix = mult( mvMatrix, rotationXXMatrix( angleXX ) );
 
-	mvMatrix = mult( mvMatrix, scalingMatrix( sx, sy, sz ) );
-			
-	// Passing the Model View Matrix to apply the current transformation
+mvMatrix = mult( mvMatrix, scalingMatrix( sx, sy, sz ) );
+		 
+// Passing the Model View Matrix to apply the current transformation
 
-	var mvUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+var mvUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
 
-	gl.uniformMatrix4fv(mvUniform, false, new Float32Array(flatten(mvMatrix)));
+gl.uniformMatrix4fv(mvUniform, false, new Float32Array(flatten(mvMatrix)));
 
-	// Associating the data to the vertex shader
+// Associating the data to the vertex shader
 
-	// This can be done in a better way !!
+// Vertex Coordinates and Vertex Normal Vectors
 
-	// Vertex Coordinates and Vertex Normal Vectors
+initBuffers();
 
-	initBuffers();
+// Material properties
 
-	// Material properties
+gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_ambient"), 
+flatten(kAmbi) );
 
-	gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_ambient"), 
-	flatten(kAmbi) );
+gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_diffuse"),
+flatten(kDiff) );
 
-	gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_diffuse"),
-	flatten(kDiff) );
+gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_specular"),
+flatten(kSpec) );
 
-	gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_specular"),
-	flatten(kSpec) );
+gl.uniform1f( gl.getUniformLocation(shaderProgram, "shininess"), 
+nPhong );
 
-	gl.uniform1f( gl.getUniformLocation(shaderProgram, "shininess"), 
-	nPhong );
+// Light Sources
 
-	// Light Sources
+var numLights = lightSources.length;
 
-	var numLights = lightSources.length;
+gl.uniform1i( gl.getUniformLocation(shaderProgram, "numLights"), 
+numLights );
 
-	gl.uniform1i( gl.getUniformLocation(shaderProgram, "numLights"), 
-	numLights );
+//Light Sources
 
-	//Light Sources
+for(var i = 0; i < lightSources.length; i++ )
+{
+gl.uniform1i( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].isOn"),
+lightSources[i].isOn );
 
-	for(var i = 0; i < lightSources.length; i++ )
-	{
-	gl.uniform1i( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].isOn"),
-	lightSources[i].isOn );
+gl.uniform4fv( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].position"),
+flatten(lightSources[i].getPosition()) );
 
-	gl.uniform4fv( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].position"),
-	flatten(lightSources[i].getPosition()) );
+gl.uniform3fv( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].intensities"),
+flatten(lightSources[i].getIntensity()) );
+}
 
-	gl.uniform3fv( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].intensities"),
-	flatten(lightSources[i].getIntensity()) );
-	}
+// Drawing 
 
-	// Drawing 
-
-	// primitiveType allows drawing as filled triangles / wireframe / vertices
+// primitiveType allows drawing as filled triangles / wireframe / vertices
 
 	if( primitiveType == gl.LINE_LOOP ) {
-				
+
+	// To simulate wireframe drawing!
+
+	// No faces are defined! There are no hidden lines!
+
+	// Taking the vertices 3 by 3 and drawing a LINE_LOOP
+
 		var i;
 
 		for( i = 0; i < triangleVertexPositionBuffer.numItems / 3; i++ ) {
-
 			gl.drawArrays( primitiveType, 3 * i, 3 ); 
 		}
 	} else {
@@ -267,7 +269,6 @@ function drawModel( angleXX, angleYY, angleZZ,
 }
 
 //----------------------------------------------------------------------------
-
 //  Drawing the 3D scene
 
 function drawScene() {
@@ -288,7 +289,7 @@ function drawScene() {
 		
 		pMatrix = ortho( -1.0, 1.0, -1.0, 1.0, -1.0, 1.0 );
 		
-		// Global transformation !!
+		// Global transformation
 		
 		globalTz = 0.0;
 		
@@ -296,7 +297,7 @@ function drawScene() {
 		
 		pos_Viewer[0] = pos_Viewer[1] = pos_Viewer[3] = 0.0;
 		
-		pos_Viewer[2] = 1.0;  
+		pos_Viewer[2] = 1.0;
 		
 		// Allow the user to control the size of the view volume
 	}
@@ -314,11 +315,11 @@ function drawScene() {
 		
 		globalTz = -2.5;
 
-		// NEW --- The viewer is on (0,0,0)
+		// The viewer is on (0,0,0)
 		
 		pos_Viewer[0] = pos_Viewer[1] = pos_Viewer[2] = 0.0;
 		
-		pos_Viewer[3] = 1.0;  
+		pos_Viewer[3] = 1.0;
 		
 		// Allow the user to control the size of the view volume
 	}
@@ -360,7 +361,7 @@ function drawScene() {
 			}
 		}
 		
-		// Passing the Light Souree Matrix to apply
+		// NEW Passing the Light Souree Matrix to apply
 	
 		var lsmUniform = gl.getUniformLocation(shaderProgram, "allLights["+ String(i) + "].lightSourceMatrix");
 	
@@ -377,8 +378,7 @@ function drawScene() {
 }
 
 //----------------------------------------------------------------------------
-//
-//  Animation
+// Animation
 
 // Animation - Updating transformation parameters
 
@@ -424,7 +424,7 @@ function animate() {
 	for(var i = 0; i < lightSources.length; i++ )
 	{
 		if( lightSources[i].isRotYYOn() ) {
-
+ 
 			var angle = lightSources[i].getRotAngleYY() + lightSources[i].getRotationSpeed() * (90 * elapsed) / 1000.0;
 	
 			lightSources[i].setRotAngleYY( angle );
@@ -436,18 +436,15 @@ function animate() {
 			lightSources[i].setRotAngleXX( angle )
 		}
 	}
-	
 	lastTime = timeNow;
 }
 
-
 //----------------------------------------------------------------------------
-
 // Timer
 
 function tick() {
 	
-	requestAnimFrame(tick);
+	requestAnimFrame(tick); 
 	
 	drawScene();
 	
@@ -455,14 +452,11 @@ function tick() {
 }
 
 //----------------------------------------------------------------------------
-//
 //  User Interaction
-//
 
 function outputInfos(){ }
 
 //----------------------------------------------------------------------------
-
 // Handling mouse events
 
 // Adapted from www.learningwebgl.com
@@ -474,6 +468,7 @@ var lastMouseX = null;
 var lastMouseY = null;
 
 function handleMouseDown(event) {
+    
     mouseDown = true;
   
     lastMouseX = event.clientX;
@@ -482,11 +477,14 @@ function handleMouseDown(event) {
 }
 
 function handleMouseUp(event) {
+
     mouseDown = false;
 }
 
 function handleMouseMove(event) {
+
     if (!mouseDown) {
+      
       return;
     } 
   
@@ -534,12 +532,12 @@ function setEventListeners(canvas) {
 	
 	// Fractal Type
 
-	document.getElementById("SierpinskiGasket").onclick = function(){
+	document.getElementById("sierpinskiGasket").onclick = function(){
 		fractal = 0;
 		computeSierpinskiGasket();
 		
 	};
-	document.getElementById("MengerSponge").onclick = function(){
+	document.getElementById("mengerSponge").onclick = function(){
 		fractal = 1;
 		computeMengerSponge();
 	};
@@ -703,10 +701,7 @@ function setEventListeners(canvas) {
 			case 1 : 
 				computeMengerSponge();
 				break;
-
-
 		}
-
 		initBuffers();
 	}; 
 
@@ -762,7 +757,7 @@ function enableScroll() {
 	document.onkeydown = null;  
 }
 
-//------------ ----------------------------------------------------------------
+//----------------------------------------------------------------------------
 //
 // WebGL Initialization
 //
@@ -821,7 +816,7 @@ function runWebGL() {
 	
 	initBuffers();
 	
-	tick();		// NEW --- A timer controls the rendering / animation    
+	tick(); 
 
 	outputInfos();
 }
@@ -866,9 +861,9 @@ function computeSierpinskiGasket() {
 
 	var [a, b, c, d] = getVertices("Tetra");
 
-	divideSierpinskiGasket(a, b, c, d, numLevels);
-	vertices = flatten(vertices);
-	computeVertexNormals(vertices, normals);  
+	divideSierpinskiGasket( a, b, c, d, numLevels );
+	vertices = flatten( vertices );
+	computeVertexNormals( vertices, normals );  
 }  
  
 function divideSierpinskiGasket(a, b, c, d, n) {
@@ -876,7 +871,7 @@ function divideSierpinskiGasket(a, b, c, d, n) {
 	if (n == 0) 
 	{	vertices.push(a, b, c,
 					  c, b, d,
-					  d, b, a,
+					  d, b, a, 
 				      a, c, d);
 	} 
 	else 
@@ -887,7 +882,7 @@ function divideSierpinskiGasket(a, b, c, d, n) {
 		var bd = computeMidPoint(b, d);
 		var cd = computeMidPoint(c, d); 
 		
-		n--; 
+		n--;   
 
 		divideSierpinskiGasket( a, ab, ac, ad, n );
 		divideSierpinskiGasket( ab, b, bc, bd, n );
@@ -900,7 +895,7 @@ function divideSierpinskiGasket(a, b, c, d, n) {
 //compute Sierpinski / Menger Cube														  //
 //--------------------------------------------------------------------------------//
 
-function interpolate( u, v, s )
+function interpolate( u, v, s ) 
 	{
 		// No input checking!!
 		
@@ -973,7 +968,7 @@ function divideMengerSponge(a, b, c, d, e, f, g, h, n) {
 		// each function have the four front vertices first, \
 		// and then the back vertices 
 
-		// FRONT LEFT BOTTOM CUBE
+		// FRONT LEFT BOTTOM CUBE 
 		divideMengerSponge
 		(	a,
 			ab,
@@ -987,7 +982,7 @@ function divideMengerSponge(a, b, c, d, e, f, g, h, n) {
 		);
 
 		// FRONT CENTER BOTTOM CUBE 
-		divideMengerSponge
+		divideMengerSponge 
 		( 	ab,
 			ba,
 			interpolate(ba, cd, 1/3), 
@@ -995,7 +990,7 @@ function divideMengerSponge(a, b, c, d, e, f, g, h, n) {
 			interpolate(ab, ef, 1/3),
 			interpolate(ba, fe, 1/3),
 			interpolate(interpolate(ba, cd, 1/3), interpolate(fe, gh, 1/3), 1/3),
-			interpolate(interpolate(ab, dc, 1/3), interpolate(ef, hg, 1/3), 1/3),
+			interpolate(interpolate(ab, dc, 1/3), interpolate(ef, hg, 1/3), 1/3), 
 			n 
 		); 
 
@@ -1266,5 +1261,63 @@ function divideMengerSponge(a, b, c, d, e, f, g, h, n) {
 	}
 }   
 
-//  			Avenged Sevenfold 1rightcenter center          
-// 1   não sei, diria que tinha uns 25% deexistem muitos aspectos em que as caracteristas   
+function computeKochSnowflake() {
+
+	var [a, b, c, d] = getVertices("Tetra");
+
+	vertices = [];
+	normals = [];
+
+	divideKochSnowflake(a, b, c, numLevels);
+	divideKochSnowflake(c, b, d, numLevels);
+	divideKochSnowflake(d, b, a, numLevels);
+	divideKochSnowflake(a, c, d, numLevels);
+	
+	vertices.push(a, b, c, 
+		c, b, d,
+		d, b, a,
+		a, c, d); 
+	
+	vertices = flatten(vertices);
+	computeVertexNormals(vertices, normals);
+
+}   
+
+//var bool = true;}}
+
+function divideKochSnowflake(a, b, c, n) {
+
+		while(n > 0) {
+
+		var ab = computeMidPoint(a, b);
+		var bc = computeMidPoint(b, c);
+		var ac = computeMidPoint(a, c);  
+
+		var mid_point = computeCentroid(ab, bc, ac);
+		var normal = computeNormalVector(a, b, c);
+		
+		for (var i = 0; i < normal.length; i++) {
+			normal[i] = normal[i] * (Math.sqrt(3)/2)*(distance2Points(ab, bc));
+		}
+
+		var nv = add(mid_point, normal);
+		
+		n--;
+
+		divideKochSnowflake(ab, bc, nv, n);
+		divideKochSnowflake(ab, nv, ac, n);
+		divideKochSnowflake(bc, ac, nv, n);
+		divideKochSnowflake(ac, bc, ab, n);
+
+		vertices.push(ac, bc, ab, 
+					  ab, bc, nv,
+					  nv, bc, ac,
+					  ac, ab, nv);
+					
+	}  
+}    
+
+
+//  			Avenged Sevenfold 1rightcenter center           
+// 1   não sei, diria que tinha uns 25% deexistem muitos aspectos em que as caracteristas    
+ 
