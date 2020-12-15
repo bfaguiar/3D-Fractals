@@ -143,6 +143,10 @@ function initBuffers() {
 			break;
 		
 		case 2 : 
+			computeJerusalemCube();
+			break;
+		
+		case 3:
 			computeKochSnowflake();
 			break;
 	}
@@ -542,6 +546,19 @@ function setEventListeners(canvas) {
 		computeMengerSponge();
 	};
 
+	document.getElementById("jerusalemCube").onclick = function() {
+		fractal = 2;
+		computeJerusalemCube();
+	};
+
+	document.getElementById("kochSnowflake").onclick = function() {
+
+		fractal = 3;
+		computeKochSnowflake();
+	}
+
+
+
 	// Button events
 	
 	document.getElementById("XX-on-off-button").onclick = function(){
@@ -704,6 +721,15 @@ function setEventListeners(canvas) {
 			case 1 : 
 				computeMengerSponge();
 				break;
+			
+			case 2 :
+				computeJerusalemCube();
+				break;
+			
+			case 3:
+				computeKochSnowflake();
+				break;
+
 		}
 		initBuffers();
 	}; 
@@ -1319,6 +1345,345 @@ function divideKochSnowflake(a, b, c, n) {
 					
 	}  
 }    
+
+// Jerusálem Cube
+
+function computeJerusalemCube() {
+
+	var [a, b, c, d, e, f, g, h] = getVertices("Cubo");
+
+	vertices = [];
+	normals = [];
+
+	drawJerusalemPattern(a, b, c, d, e, f, g, h, numLevels); 
+	vertices = flatten(vertices);
+	computeVertexNormals(vertices, normals);  
+}
+
+function drawJerusalemPattern(a, b, c, d, e, f, g, h, n) {
+
+	if (n == 0) {
+		vertices.push(a, b, c, 
+			a, c, d,
+			e, h, g,
+			e, g, f,
+			h, d, c,
+			h, c, g,
+			e, f, b, 
+			e, b, a,
+			f, g, c,
+			f, c, b,
+			e, a, d, 
+			e, d, h);  
+	}
+
+	else {
+
+		var side = distance2Points(c, d);
+		var small_jd = ((Math.sqrt(2)-1) * (Math.sqrt(2)-1)); //2/3
+		var  jerusalem_distance= (Math.sqrt(2)-1);
+		var large_jd = jerusalem_distance + small_jd;
+		//console.log(side);
+		//console.log(small_large_side);
+		//console.log(jerusalem_distance); 
+
+		n--;
+
+		var ab = interpolate(a, b, jerusalem_distance);
+		//console.log(ab);
+		var ba = interpolate(a, b, large_jd);
+		//console.log(ba);
+		var ae = interpolate(a, e, jerusalem_distance);
+		var ea = interpolate(a, e, large_jd);
+		var bf = interpolate(b, f, jerusalem_distance);
+		var fb = interpolate(b, f, large_jd);
+		var ef = interpolate(e, f, jerusalem_distance);
+		var fe = interpolate(e, f, large_jd);
+		var dc = interpolate(d, c, jerusalem_distance);
+		var cd = interpolate(d, c, large_jd);
+		var cg = interpolate(c, g, jerusalem_distance);
+		var gc = interpolate(c, g, large_jd);
+		var hg = interpolate (h, g, jerusalem_distance);
+		var gh = interpolate(h, g, large_jd);
+		var dh = interpolate(d, h, jerusalem_distance);
+		var hd = interpolate(d, h, large_jd);
+		var ad = interpolate(a, d, jerusalem_distance);
+		var da = interpolate(a, d, large_jd);
+		var bc = interpolate(b, c, jerusalem_distance);
+		var cb = interpolate(b, c, large_jd);
+		var fg = interpolate(f, g, jerusalem_distance);
+		var gf = interpolate(f, g, large_jd);
+		var eh = interpolate(e, h, jerusalem_distance);
+		var he = interpolate(e, h, large_jd); 
+
+		//front left bottom
+		drawJerusalemPattern(
+			a, 
+			ab, 
+			interpolate(ab, dc, jerusalem_distance),
+			ad,
+
+			ae, 
+			interpolate(ae, bf, jerusalem_distance), 
+			interpolate(interpolate(ab, dc, jerusalem_distance), interpolate(ef, hg, jerusalem_distance), jerusalem_distance),
+			interpolate(ae, dh, jerusalem_distance),
+			n
+		);
+
+		drawJerusalemPattern(
+			ba, 
+			b,
+			bc, 
+			interpolate(ad, bc, large_jd),
+			
+			interpolate(ae, bf, large_jd),
+			bf, 
+			interpolate(bf, cg, jerusalem_distance),
+			interpolate(interpolate(bf, cg, jerusalem_distance), interpolate(ae, dh, jerusalem_distance), jerusalem_distance),
+			n,
+		);
+
+		drawJerusalemPattern(
+			da, 
+			interpolate(da, cb, jerusalem_distance),
+			dc ,  
+			d, 
+
+			interpolate(da, he, jerusalem_distance),
+			interpolate(interpolate(da, he, jerusalem_distance), interpolate(cb, gf, jerusalem_distance), jerusalem_distance),
+			interpolate(dh, cg, jerusalem_distance),
+			dh,
+			n
+
+		);
+
+		drawJerusalemPattern(
+			interpolate(da, cb, large_jd),
+			cb, 
+			c, 
+			cd, 
+
+			interpolate(interpolate(da,  he,  jerusalem_distance), interpolate(cb, gf, jerusalem_distance), large_jd),
+			interpolate(cb, gf, jerusalem_distance),
+			cg, 
+			interpolate(dh, cg, large_jd),
+			n,
+		);
+
+		drawJerusalemPattern(
+			interpolate(da, he, large_jd),
+			interpolate(interpolate(da, he, large_jd), interpolate(cb, gf, large_jd), jerusalem_distance),
+			 interpolate(hd, gc, jerusalem_distance),
+			 hd, 
+
+			 he, 
+			 interpolate(he, gf, jerusalem_distance),
+			 hg, 
+			 h ,
+			 n, 
+		);
+
+		drawJerusalemPattern(
+				interpolate(interpolate(da, he, large_jd), interpolate(cb, gf, large_jd),  large_jd),
+				interpolate(cb, gf, large_jd),
+				gc, 
+				interpolate(hd, gc, large_jd),
+
+				interpolate(he, gf, large_jd),
+				gf, 
+				g, 
+				gh, 
+				n
+
+		);
+ 
+		drawJerusalemPattern (
+			ea, 
+			interpolate(ea, fb, jerusalem_distance),
+			interpolate(interpolate(ea, hd, jerusalem_distance), interpolate(fb, gc, jerusalem_distance), jerusalem_distance), 
+			interpolate(ea, hd, jerusalem_distance),
+
+			e, ef, 
+			interpolate(eh, fg, jerusalem_distance),
+			eh,
+			n
+			
+		);
+
+		drawJerusalemPattern( 
+			interpolate(ea, fb, large_jd), 
+			fb, 
+			interpolate(fb, gc, jerusalem_distance), 
+			  interpolate(interpolate(fb, gc, jerusalem_distance), interpolate(ea, hd, jerusalem_distance), jerusalem_distance),
+			  
+			  fe,  
+			f,
+		fg,  
+		interpolate(eh, fg, large_jd),
+		  
+
+		  n
+		);
+
+		drawJerusalemPattern(
+			ab, 
+			ba, 
+			interpolate(ba, cd, small_jd),
+			interpolate(ab, dc, small_jd),
+			interpolate(ab, ef, small_jd),
+			interpolate(ba, fe, small_jd), 
+
+			interpolate(interpolate(ba, cd, small_jd),interpolate(fe, gh, small_jd), small_jd),
+			interpolate(interpolate(ab, dc, small_jd), interpolate(ef, hg, small_jd), small_jd ),
+
+			n,
+
+		) 
+
+		drawJerusalemPattern(
+			interpolate(dc, ab, small_jd),
+			interpolate(cd, ba, small_jd),
+			cd,
+			dc, 
+
+			interpolate(interpolate(dc, ab, small_jd), interpolate(hg, ef, small_jd), small_jd),
+			interpolate(interpolate(cd, ba, small_jd), interpolate(gh ,fe, small_jd), small_jd),
+			interpolate(cd, gh, small_jd),
+			interpolate(dc, hg, small_jd),
+			n,
+		)
+
+		drawJerusalemPattern(
+			ad, 
+			interpolate(ad, bc, small_jd),
+			interpolate(da, cb, small_jd),
+			da, 
+
+			interpolate(ad, eh, small_jd),
+			interpolate(interpolate(ad, eh, small_jd), interpolate(bc, fg, small_jd), small_jd),
+			interpolate(interpolate(da, he, small_jd), interpolate(cb, gf, small_jd), small_jd),
+			interpolate(da, he, small_jd), 
+ 
+			n
+			
+		);
+
+		drawJerusalemPattern (
+			interpolate(bc, ad, small_jd),
+			bc, 
+			cb,
+			interpolate(cb, da, small_jd),
+
+			interpolate(interpolate(bc, fg, small_jd), interpolate(ad, eh, small_jd), small_jd),
+			interpolate(bc, fg, small_jd), 
+			interpolate(cb, gf, small_jd),
+			interpolate(interpolate(cb, gf, small_jd), interpolate(da, he, small_jd), small_jd),
+			n
+		)
+
+		drawJerusalemPattern( 
+			 interpolate(dh, ae, small_jd), 
+			 interpolate(interpolate(dh, cg, small_jd), interpolate(ae, bf, small_jd), small_jd),
+			 interpolate(dh, cg, small_jd),
+			 dh, 
+
+			 interpolate(hd, ea, small_jd),
+			 interpolate(interpolate(hd, ea, small_jd), interpolate(gc, fb, small_jd), small_jd),
+			 interpolate(hd, gc,  small_jd),
+			 hd,
+			 n,
+		)
+
+		drawJerusalemPattern( 
+				ae, 
+				interpolate(ae, bf, small_jd),
+			interpolate(interpolate(ae, bf, small_jd), interpolate(dh, cg, small_jd), small_jd),
+			interpolate(ae, dh, small_jd),
+
+			ea, 
+			interpolate(ea, fb, small_jd),
+			interpolate(interpolate(ea, fb, small_jd), interpolate(hd, gc, small_jd), small_jd),
+			interpolate(ea, hd, small_jd),
+			n 
+		)
+
+		drawJerusalemPattern( 
+				interpolate(eh, ad, small_jd),
+				interpolate(interpolate(eh, ad, small_jd), interpolate(fg, bc, small_jd), small_jd),
+				interpolate(interpolate(he, da, small_jd), interpolate(gf, cb, small_jd), small_jd), 
+				interpolate(he, da, small_jd),
+				
+				eh, 
+				 interpolate(eh, fg, small_jd),
+				 interpolate(he, gf, small_jd),
+				he,
+				n
+		)
+
+		drawJerusalemPattern (
+			interpolate(interpolate(fg, bc, small_jd), interpolate(eh, ad, small_jd), small_jd),
+			interpolate(fg, bc, small_jd),
+			interpolate(gf, cb, small_jd), 
+			interpolate(interpolate(gf, cb, small_jd), interpolate(he, da, small_jd), small_jd),
+			
+			interpolate(fg, eh, small_jd),
+			fg, 
+			gf, 
+			interpolate(gf, he, small_jd), 
+			n
+
+		)
+
+		drawJerusalemPattern (
+			interpolate(interpolate(cg, dh, small_jd), interpolate(bf, ae, small_jd), small_jd),
+			interpolate(cg, bf, small_jd),
+			cg,  
+			interpolate(cg, dh, small_jd),
+			interpolate(interpolate(gc, fb, small_jd), interpolate(hd, ea, small_jd), small_jd),
+			interpolate(gc, fb, small_jd),
+			gc, 
+			interpolate(gc, hd, small_jd), 
+			n
+		)
+
+		drawJerusalemPattern(interpolate(bf, ae, small_jd),  bf, interpolate(bf, cg, small_jd), interpolate(interpolate(bf, cg, small_jd), interpolate(ae, dh, small_jd), small_jd),
+			interpolate(fb, ea, small_jd), fb, interpolate(fb, gc, small_jd), interpolate(interpolate(fb, gc, small_jd), interpolate(ea, hd, small_jd), small_jd), n)
+			
+
+			drawJerusalemPattern(
+interpolate(ef, ab, small_jd),
+interpolate(fe, ba, small_jd),
+
+interpolate(interpolate(fe, ba, small_jd), interpolate(gh, cd, small_jd), small_jd), 
+	interpolate(interpolate(ef, ab, small_jd), interpolate(hg, dc, small_jd), small_jd),
+				ef, 
+			fe,
+		interpolate(fe, gh, small_jd),
+				interpolate(ef, hg, small_jd),
+					n
+
+				) 
+
+
+
+			drawJerusalemPattern(
+			interpolate(interpolate(hg, dc, small_jd), interpolate(ef, ab, small_jd), small_jd),
+			 interpolate(interpolate(gh, cd, small_jd), interpolate(fe, ba, small_jd), small_jd),
+			 interpolate(gh, cd, small_jd),
+			 interpolate(hg, dc, small_jd),
+			 interpolate(hg, ef, small_jd),
+			 interpolate(gh, fe, small_jd),
+			 gh, 
+			 hg, 
+			 n, 
+		) 
+
+
+		
+
+	}
+}  
+
 
 
 //  			Avenged Sevenfold 1rightcenter center           
