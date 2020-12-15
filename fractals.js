@@ -638,6 +638,9 @@ function setEventListeners(canvas) {
 		
 		// The initial values
 
+		numLevels = 0;
+		document.getElementById("num-iterations").innerHTML = numLevels;
+
 		// The translation vector
 
 		tx = 0.0;
