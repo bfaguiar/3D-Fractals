@@ -47,29 +47,19 @@ var sz = 0.5;
 // GLOBAL Animation controls
 
 var globalRotationYY_ON = 1;
-
 var globalRotationYY_DIR = 1;
-
 var globalRotationYY_SPEED = 1;
 
 // Local Animation controls
 
 var rotationXX_ON = 0;
-
 var rotationXX_DIR = 1;
-
 var rotationXX_SPEED = 1;
- 
 var rotationYY_ON = 0;
-
 var rotationYY_DIR = 1;
-
 var rotationYY_SPEED = 1;
- 
 var rotationZZ_ON = 0;
-
 var rotationZZ_DIR = 1;
-
 var rotationZZ_SPEED = 1;
  
 // To allow choosing the way of drawing the model triangles
@@ -119,9 +109,7 @@ var nPhong = 100;
 // Initial model has just ONE TRIANGLE
 
 var vertices = [ ];
-
 var normals = [ ];
-
 
 //----------------------------------------------------------------------------
 // The WebGL code
@@ -147,11 +135,11 @@ function initBuffers() {
 			break;
 		
 		case 3:
-			computeKochSnowflake();
+			computeCantorDust();
 			break;
 
 		case 4 :
-			computeCantorDust();
+			computeKochSnowflake();
 			break;
 	}
 	
@@ -186,16 +174,14 @@ function initBuffers() {
 //  Drawing the model
 
 function drawModel( angleXX, angleYY, angleZZ, 
-	sx, sy, sz,
-	tx, ty, tz,
-	mvMatrix,
-	primitiveType ) {
+					sx, sy, sz,
+					tx, ty, tz,
+					mvMatrix,
+					primitiveType ) {
 
 // The the global model transformation is an input
 
 // Concatenate with the particular model transformations
-
-// Pay attention to transformation order !!
 
 mvMatrix = mult( mvMatrix, translationMatrix( tx, ty, tz ) );
 		 
@@ -221,37 +207,29 @@ initBuffers();
 
 // Material properties
 
-gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_ambient"), 
-flatten(kAmbi) );
+gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_ambient"), flatten(kAmbi) );
 
-gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_diffuse"),
-flatten(kDiff) );
+gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_diffuse"), flatten(kDiff) );
 
-gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_specular"),
-flatten(kSpec) );
+gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_specular"), flatten(kSpec) );
 
-gl.uniform1f( gl.getUniformLocation(shaderProgram, "shininess"), 
-nPhong );
+gl.uniform1f( gl.getUniformLocation(shaderProgram, "shininess"), nPhong );
 
 // Light Sources
 
 var numLights = lightSources.length;
 
-gl.uniform1i( gl.getUniformLocation(shaderProgram, "numLights"), 
-numLights );
+gl.uniform1i( gl.getUniformLocation(shaderProgram, "numLights"), numLights );
 
 //Light Sources
 
 for(var i = 0; i < lightSources.length; i++ )
 {
-gl.uniform1i( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].isOn"),
-lightSources[i].isOn );
+	gl.uniform1i( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].isOn"), lightSources[i].isOn );
 
-gl.uniform4fv( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].position"),
-flatten(lightSources[i].getPosition()) );
+	gl.uniform4fv( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].position"), flatten(lightSources[i].getPosition()) );
 
-gl.uniform3fv( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].intensities"),
-flatten(lightSources[i].getIntensity()) );
+	gl.uniform3fv( gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].intensities"), flatten(lightSources[i].getIntensity()) );
 }
 
 // Drawing 
@@ -308,8 +286,7 @@ function drawScene() {
 		pos_Viewer[2] = 1.0;
 		
 		// Allow the user to control the size of the view volume
-	}
-	else {	
+	} else {	
 
 		// A standard view volume.
 		
@@ -340,8 +317,7 @@ function drawScene() {
 	
 	// Passing the viewer position to the vertex shader
 	
-	gl.uniform4fv( gl.getUniformLocation(shaderProgram, "viewerPosition"),
-        flatten(pos_Viewer) );
+	gl.uniform4fv( gl.getUniformLocation(shaderProgram, "viewerPosition"), flatten(pos_Viewer) );
 	
 	// GLOBAL TRANSFORMATION FOR THE WHOLE SCENE
 	
@@ -363,9 +339,8 @@ function drawScene() {
 
 			if( lightSources[i].isRotYYOn() ) 
 			{
-				lightSourceMatrix = mult( 
-						lightSourceMatrix, 
-						rotationYYMatrix( lightSources[i].getRotAngleYY() ) );
+				lightSourceMatrix = mult( lightSourceMatrix, 
+										  rotationYYMatrix( lightSources[i].getRotAngleYY() ) );
 			}
 		}
 		
@@ -423,8 +398,6 @@ function animate() {
 
 			angleZZ += rotationZZ_DIR * rotationZZ_SPEED * (90 * elapsed) / 1000.0;
 		}
-		
-
 	}
 
 	// Rotating the light sources
@@ -491,11 +464,8 @@ function handleMouseUp(event) {
 
 function handleMouseMove(event) {
 
-    if (!mouseDown) {
-      
-      return;
-    } 
-  
+	if (!mouseDown) return;
+	
     // Rotation angles proportional to cursor displacement
     
     var newX = event.clientX;
@@ -555,19 +525,16 @@ function setEventListeners(canvas) {
 		computeJerusalemCube();
 	};
 
-	document.getElementById("kochSnowflake").onclick = function() {
-
+	document.getElementById("cantorDust").onclick = function() {
 		fractal = 3;
-		computeKochSnowflake();
-	}
-
-	document.getElementById("dust").onclick = function() {
-		fractal = 4;
 		computeCantorDust();
 	}
 
+	document.getElementById("kochSnowflake").onclick = function() {
 
-
+		fractal = 4;
+		computeKochSnowflake();
+	}
 
 	// Button events
 	
@@ -670,55 +637,36 @@ function setEventListeners(canvas) {
 
 		// The translation vector
 
-		tx = 0.0;
-
-		ty = 0.0;
-
-		tz = 0.0;
+		tx = ty = tz = 0.0;
 
 		// The rotation angles in degrees
 
 		angleXX = -22.5;
-
 		angleYY = 16.0;
-
 		angleZZ = 0.0;
 
 		// The scaling factors
 
-		sx = 0.5;
-
-		sy = 0.5;
-
-		sz = 0.5;
+		sx = sy = sz = 0.5;
 		
 		// Local Animation controls
 
 		rotationXX_ON = 0;
-
 		rotationXX_DIR = 1;
-
 		rotationXX_SPEED = 1;
-		
 		rotationYY_ON = 0;
-
 		rotationYY_DIR = 1;
-
 		rotationYY_SPEED = 1;
-		
 		rotationZZ_ON = 0;
-
 		rotationZZ_DIR = 1;
-
 		rotationZZ_SPEED = 1;
-		
 		projectionType = 0;
-		kDiff = [0.8, 0.8, 0.8]; //[ 0.2, 0.48, 0.72 ]; // COLOR
-		//kDiff = [ 0.2, 0.48, 0.72 ]; // COLOR
+		kDiff = [0.8, 0.8, 0.8]; 
 
 		initBuffers();
 	};
 
+	// Iteraction++
 	document.getElementById("add-recursion-button").onclick = function(){
 		numLevels = numLevels+1;
 		document.getElementById("num-iterations").innerHTML = numLevels;
@@ -735,19 +683,19 @@ function setEventListeners(canvas) {
 			case 2 :
 				computeJerusalemCube();
 				break;
-			
+
 			case 3:
-				computeKochSnowflake();
+				computeCantorDust();
 				break;
 
-				case 4:
-					computeCantorDust();
-					break;
-
+			case 4:
+				computeKochSnowflake();
+				break;
 		}
 		initBuffers();
 	}; 
 
+	// Iteraction--
 	document.getElementById("reduce-recursion-button").onclick = function(){
 		if (numLevels > 0){
 			numLevels = numLevels-1;
@@ -763,6 +711,7 @@ function setEventListeners(canvas) {
     
 	document.onmousemove = handleMouseMove;
 	
+	// Zooming
 	canvas.addEventListener('wheel', function(event) {
 		if(event.deltaY > 0) {  
 			if (sx <= 0.1) { sx = 0.1; sy = 0.1; sz = 0.1; } 
@@ -774,36 +723,15 @@ function setEventListeners(canvas) {
 		}
 		drawScene();
 	}, false);
-}
-
-function preventDefault(e) {
-	e = e || window.event;
-	if (e.preventDefault)
-		e.preventDefault();
-	e.returnValue = false;
-}
-
-function disableScroll() {
-	if (window.addEventListener) 
-		window.addEventListener('DOMMouseScroll', preventDefault, false);
-	window.onwheel = preventDefault; 
-	window.onmousewheel = document.onmousewheel = preventDefault; 
-	window.ontouchmove  = preventDefault; 
-}
-  
-function enableScroll() {
-	if (window.removeEventListener)
-		window.removeEventListener('DOMMouseScroll', preventDefault, false);
-	window.onmousewheel = document.onmousewheel = null; 
-	window.onwheel = null; 
-	window.ontouchmove = null;  
-	document.onkeydown = null;  
+	
+	// Prent window scroll when zooming
+	document.getElementById( "my-canvas" ).onwheel = function(event){
+    	event.preventDefault();
+	};
 }
 
 //----------------------------------------------------------------------------
-//
 // WebGL Initialization
-//
 
 function initWebGL( canvas ) {
 	try {
@@ -818,7 +746,7 @@ function initWebGL( canvas ) {
 		
 		// DEFAULT: The viewport background color is WHITE
 		
-		// NEW - Drawing the triangles defining the model
+		// Drawing the triangles defining the model
 		
 		primitiveType = gl.TRIANGLES;
 		
@@ -864,7 +792,7 @@ function runWebGL() {
 	outputInfos();
 }
 
-function getVertices( flag) {
+function getVertices( flag ) {
 
 	if (flag === "Tetra") {
 
@@ -893,8 +821,17 @@ function getVertices( flag) {
 	return null;
 }  
 
+function interpolate( u, v, s ) {
+		
+	var result = [];
+	for ( var i = 0; i < u.length; ++i ) {
+		result.push( (1.0 - s) * u[i] +  s * v[i] );
+	}
+	return result; 
+}  
+
 //----------------------------------------------------------------------------
-// Sierpinski Gasket Tetra
+// Sierpinski Gasket
 //----------------------------------------------------------------------------
 
 function computeSierpinskiGasket() {
@@ -911,14 +848,13 @@ function computeSierpinskiGasket() {
  
 function divideSierpinskiGasket(a, b, c, d, n) {
 	
-	if (n == 0) 
-	{	vertices.push(a, b, c,
+	if (n == 0) {	
+		vertices.push(a, b, c,
 					  c, b, d,
 					  d, b, a, 
 				      a, c, d);
-	} 
-	else 
-	{	var ab = computeMidPoint(a, b);
+	} else {	
+		var ab = computeMidPoint(a, b);
 		var ac = computeMidPoint(a, c);
 		var ad = computeMidPoint(a, d);
 		var bc = computeMidPoint(b, c);
@@ -934,21 +870,9 @@ function divideSierpinskiGasket(a, b, c, d, n) {
 	}  
 }
 
-//--------------------------------------------------------------------------------//
-//compute Sierpinski / Menger Cube														  //
-//--------------------------------------------------------------------------------//
-
-function interpolate( u, v, s ) 
-	{
-		// No input checking!!
-		
-		var result = [];
-		for ( var i = 0; i < u.length; ++i ) {
-			result.push( (1.0 - s) * u[i] +  s * v[i] );
-		}
-
-		return result; 
-	}  
+//--------------------------------------------------------------------------------
+// Menger Sponge   													
+//--------------------------------------------------------------------------------
 
 function computeMengerSponge() {
 	
@@ -957,29 +881,27 @@ function computeMengerSponge() {
 
 	var [a, b, c, d, e, f, g, h] = getVertices("Cubo");
 
-		divideMengerSponge(a, b, c, d, e, f, g, h, numLevels);
-		vertices = flatten(vertices);
-		computeVertexNormals(vertices, normals) ;
-
+	divideMengerSponge(a, b, c, d, e, f, g, h, numLevels);
+	vertices = flatten(vertices);
+	computeVertexNormals(vertices, normals) ;
 }
  
 function divideMengerSponge(a, b, c, d, e, f, g, h, n) {
 
 	if (n < 1) {
 		vertices.push(a, b, c, 
-			a, c, d,
-			e, h, g,
-			e, g, f,
-			h, d, c,
-			h, c, g,
-			e, f, b, 
-			e, b, a,
-			f, g, c,
-			f, c, b,
-			e, a, d, 
-			e, d, h);  
-	}
-	else {
+					  a, c, d,
+					  e, h, g,
+					  e, g, f,
+					  h, d, c,
+					  h, c, g,
+			  		  e, f, b, 
+					  e, b, a,
+					  f, g, c,
+					  f, c, b,
+					  e, a, d, 
+					  e, d, h);  
+	} else {
 
 		var ab = interpolate(a, b, 1/3);
 		var ba = interpolate(a, b, 2/3);
@@ -1008,19 +930,20 @@ function divideMengerSponge(a, b, c, d, e, f, g, h, n) {
 
 		n--;
 
-		// each function have the four front vertices first, \
-		// and then the back vertices 
+		// each function bellow has the four front vertices first and then the back vertices 
 
 		// FRONT LEFT BOTTOM CUBE 
 		divideMengerSponge
 		(	a,
 			ab,
-			interpolate(ad, bc, 1/3),
+			interpolate( ad, bc, 1/3 ),
 			ad, 
+
 			ae,
-			interpolate(ab, ef, 1/3),
-			interpolate(interpolate(ad, bc, 1/3), interpolate(eh, fg, 1/3 ), 1/3),
-			interpolate(ad, eh, 1/3),  
+			interpolate( ab, ef, 1/3 ),
+			interpolate(interpolate( ad, bc, 1/3 ), interpolate( eh, fg, 1/3 ), 1/3 ),
+			interpolate( ad, eh, 1/3 ),  
+
 			n 
 		);
 
@@ -1028,282 +951,839 @@ function divideMengerSponge(a, b, c, d, e, f, g, h, n) {
 		divideMengerSponge 
 		( 	ab,
 			ba,
-			interpolate(ba, cd, 1/3), 
-			interpolate(ab, dc, 1/3),
-			interpolate(ab, ef, 1/3),
-			interpolate(ba, fe, 1/3),
-			interpolate(interpolate(ba, cd, 1/3), interpolate(fe, gh, 1/3), 1/3),
-			interpolate(interpolate(ab, dc, 1/3), interpolate(ef, hg, 1/3), 1/3), 
+			interpolate( ba, cd, 1/3 ), 
+			interpolate( ab, dc, 1/3 ),
+
+			interpolate( ab, ef, 1/3 ),
+			interpolate( ba, fe, 1/3 ),
+			interpolate(interpolate( ba, cd, 1/3 ), interpolate( fe, gh, 1/3 ), 1/3 ),
+			interpolate(interpolate( ab, dc, 1/3 ), interpolate( ef, hg, 1/3 ), 1/3 ), 
+
 			n 
 		); 
 
-		// ///////////////
 		// FRONT RIGHT BOTTOM CUBE
 		divideMengerSponge 
 		(	ba, 
 			b,
 			bc, 
-			interpolate(ad, bc, 2/3),
-			interpolate(ba, fe, 1/3),
+			interpolate( ad, bc, 2/3 ),
+
+			interpolate( ba, fe, 1/3 ),
 			bf,
-			interpolate(bc, fg, 1/3),
-			interpolate( interpolate(ba, cd, 1/3), interpolate(fe, gh, 1/3), 1/3),
+			interpolate( bc, fg, 1/3 ),
+			interpolate(interpolate( ba, cd, 1/3 ), interpolate( fe, gh, 1/3 ), 1/3 ),
+
 			n 
 		);
 
-		// ///////////////
-		// FRONT MID LEFT 
+		// FRONT MID LEFT CUBE
 		divideMengerSponge
 		(	ad,
-			interpolate(ad, bc, 1/3),
-			interpolate(da, cb, 1/3),
+			interpolate( ad, bc, 1/3 ),
+			interpolate( da, cb, 1/3 ),
 			da,
-			interpolate(ad, eh, 1/3),
-			interpolate(interpolate(ad, bc, 1/3 ), interpolate(eh, fg, 1/3), 1/3),
-			interpolate(interpolate(da, cb, 1/3) , interpolate(he, gf, 1/3), 1/3),
-			interpolate(da, he, 1/3),
+
+			interpolate( ad, eh, 1/3 ),
+			interpolate(interpolate( ad, bc, 1/3 ), interpolate( eh, fg, 1/3 ), 1/3 ),
+			interpolate(interpolate( da, cb, 1/3 ), interpolate( he, gf, 1/3 ), 1/3 ),
+			interpolate( da, he, 1/3 ),
+
 			n
 		); 
 
-		// //////////////
-		// FRONT MID RIGHT 
+		// FRONT MID RIGHT CUBE
 		divideMengerSponge 
-		(	interpolate(ad, bc, 2/3),
+		(	interpolate( ad, bc, 2/3 ),
 			bc, 
 			cb,
-			interpolate(da, cb, 2/3),
-			interpolate(interpolate(ba, cd, 1/3), interpolate(fe, gh, 1/3), 1/3), 
-			interpolate(bc, fg, 1/3),  
-			interpolate(cb, gf, 1/3),
-			interpolate(interpolate(da, cb, 2/3), interpolate(he, gf, 2/3), 1/3),
+			interpolate( da, cb, 2/3 ),
+
+			interpolate(interpolate( ba, cd, 1/3 ), interpolate( fe, gh, 1/3 ), 1/3 ), 
+			interpolate( bc, fg, 1/3 ),  
+			interpolate( cb, gf, 1/3 ),
+			interpolate(interpolate( da, cb, 2/3 ), interpolate( he, gf, 2/3 ), 1/3 ),
+
 			n
 		);     
 
-		// FRONT TOP LEFT 
+		// FRONT TOP LEFT CUBE
 		divideMengerSponge 
-		(
-			da, 
-			interpolate(da, cb, 1/3),
+		(	da, 
+			interpolate( da, cb, 1/3 ),
 			dc, 
 			d,
-			// back
-			interpolate(da, he, 1/3),
-			interpolate(interpolate(da, cb, 1/3), interpolate(he, gf, 1/3), 1/3),
-			interpolate(dc, hg, 1/3),
+
+			interpolate( da, he, 1/3 ),
+			interpolate(interpolate( da, cb, 1/3 ), interpolate( he, gf, 1/3 ), 1/3 ),
+			interpolate( dc, hg, 1/3 ),
 			dh,  
+
 			n
 		);
 
-
-		// FRONT TOP MID
+		// FRONT TOP MID CUBE
 		divideMengerSponge 
-		(	// bottom top
-			interpolate(da, cb, 1/3),
-			interpolate(da, cb, 2/3),
+		(	interpolate( da, cb, 1/3 ),
+			interpolate( da, cb, 2/3 ),
 			cd,  
-			dc, 
-			// BOTTOM  
-			interpolate(interpolate(da, cb, 1/3), interpolate(he, gf, 1/3), 1/3),
-			interpolate(interpolate(da, cb, 2/3), interpolate(he, gf, 2/3), 1/3),
-			interpolate(cd, gh, 1/3 ),
-			interpolate(dc, hg, 1/3),
+			dc,
+
+			interpolate(interpolate( da, cb, 1/3 ), interpolate( he, gf, 1/3 ), 1/3 ),
+			interpolate(interpolate( da, cb, 2/3 ), interpolate( he, gf, 2/3 ), 1/3 ),
+			interpolate( cd, gh, 1/3 ),
+			interpolate( dc, hg, 1/3),
+
 			n
 		);  
 
-		// FRONT TOP RIGHT
+		// FRONT TOP RIGHT CUBE
 		divideMengerSponge 
-		(	//bottom 
-			interpolate(da, cb, 2/3),
+		(	interpolate( da, cb, 2/3 ),
 			cb,
 			c,
 			cd,
-			// top  
-			interpolate(interpolate(da, cb, 2/3), interpolate(he, gf, 2/3 ), 1/3 ),
-			interpolate(cb, gf, 1/3 ),
-	  
+
+			interpolate(interpolate( da, cb, 2/3 ), interpolate( he, gf, 2/3 ), 1/3 ),
+			interpolate( cb, gf, 1/3 ),
 			cg,
-			interpolate(cd, gh, 1/3 ),
+			interpolate( cd, gh, 1/3 ),
+
 			n
 		);
 		
-		// mid top left
-		
+		// MID TOP LEFT CUBE
 		divideMengerSponge
-		(	//bottom
-			interpolate(da, he, 1/3),
-			interpolate(interpolate(da, cb, 1/3), interpolate( he, gf, 1/3), 1/3), 
-			interpolate(dc, hg, 1/3),
+		(	interpolate( da, he, 1/3 ),
+			interpolate(interpolate( da, cb, 1/3 ), interpolate( he, gf, 1/3 ), 1/3 ), 
+			interpolate( dc, hg, 1/3 ),
 			dh,
-			interpolate(da, he, 2/3),
-			interpolate(interpolate(da, cb, 1/3), interpolate( he, gf, 1/3), 2/3),
-			interpolate(dc,  hg, 2/3 ),
-			// top  
+
+			interpolate( da, he, 2/3 ),
+			interpolate(interpolate( da, cb, 1/3 ), interpolate( he, gf, 1/3 ), 2/3 ),
+			interpolate( dc,  hg, 2/3 ),
 			hd, 
+
+			n
+		);    
+
+		// MID TOP RIGHT CUBE 
+		divideMengerSponge
+		(	interpolate(interpolate( da, cb, 2/3 ), interpolate( he,  gf, 2/3 ), 1/3 ), 
+			interpolate( cb, gf, 1/3 ),
+			cg, 
+			interpolate( cd, gh, 1/3 ),
+			 
+			interpolate(interpolate( da, cb, 2/3 ), interpolate( he, gf, 2/3 ), 2/3 ),
+			interpolate( cb, gf, 2/3 ),
+			gc, 
+			interpolate( cd, gh, 2/3 ),
+
 			n
 		); 
 
-		// mid bottom left
+		// MID BOTOM LEFT CUBE
 		divideMengerSponge
-		(	// bottom
-			ae, 
-			interpolate(ab, ef, 1/3),
-			interpolate(interpolate(ad, bc, 1/3), interpolate( eh, fg , 1/3), 1/3),
-			interpolate(ad, eh, 1/3 ),
+		(	ae, 
+			interpolate( ab, ef, 1/3 ),
+			interpolate(interpolate( ad, bc, 1/3 ), interpolate( eh, fg , 1/3 ), 1/3 ),
+			interpolate( ad, eh, 1/3 ),
+
 			ea,  
 			interpolate(ab, ef, 2/3),
-			// top 
-	
 			interpolate ( interpolate( ad, bc, 1/3), interpolate(eh, fg , 1/3), 2/3), 
 			interpolate( ad,  eh , 2/3 ),
+
 			n
-		);     
-
-		// mid top right 
-		divideMengerSponge
-		(	// top 
-
-			interpolate(interpolate(da, cb, 2/3), interpolate(he,  gf, 2/3), 1/3 ), 
-			interpolate(cb, gf, 1/3 ),
-			cg, 
-			interpolate(cd, gh, 1/3 ),  
-			interpolate(interpolate(da, cb, 2/3 ), interpolate(he, gf, 2/3 ), 2/3 ),
-			interpolate(cb, gf, 2/3 ),
-			gc, 
-
-			interpolate( cd, gh, 2/3 ),
-			// bottom 
-
-
-			
-			n
-		); 
+		);  
 		
-		// mid bottom right 
+		// MID BOTTOM RIGHT CUBE 
 		divideMengerSponge
-		(	
-			interpolate(ba, fe, 1/3), 
+		(	interpolate( ba, fe, 1/3 ), 
 			bf, 
-			interpolate(bc, fg, 1/3),
-			interpolate(interpolate(ad, bc, 2/3 ), interpolate(eh, fg, 2/3), 1/3  ),
-			interpolate(ba, fe, 2/3  ),  
+			interpolate( bc, fg, 1/3 ),
+			interpolate(interpolate( ad, bc, 2/3 ), interpolate( eh, fg, 2/3 ), 1/3 ),
+
+			interpolate( ba, fe, 2/3 ),  
 			fb, 
-			interpolate(bc, fg, 2/3),
-			interpolate(interpolate(ad, bc, 2/3 ) ,interpolate(eh, fg, 2/3), 2/3, ), 
-			
+			interpolate( bc, fg, 2/3 ),
+			interpolate(interpolate( ad, bc, 2/3 ) ,interpolate( eh, fg, 2/3 ), 2/3 ),
+
 			n
 		); 
 
-		// back top left r))
+		// BACK TOP LEFT CUBE
 		divideMengerSponge
-		(	interpolate(da, he, 2/3 ),
-			interpolate(interpolate(da, cb, 1/3 ), interpolate(he, gf, 1/3 ), 2/3 ),
-			interpolate(dc, hg, 2/3 ), 
-			hd,  
+		(	interpolate( da, he, 2/3 ),
+			interpolate(interpolate( da, cb, 1/3 ), interpolate( he, gf, 1/3 ), 2/3 ),
+			interpolate( dc, hg, 2/3 ), 
+			hd, 
+
 			he, 
-			interpolate(he, gf, 1/3 ),
+			interpolate( he, gf, 1/3 ),
 			hg , 
 			h,
+
 			n
 		);
 
-		// back top mid  
+		// BACK TOP MID CUBE  
 		divideMengerSponge
-		(	interpolate(interpolate( da, cb, 1/3), interpolate(he, gf ,1/3 ), 2/3 ), 
-			interpolate( interpolate( da, cb,2/3), interpolate(he, gf, 2/3 ), 2/3),
+		(	interpolate(interpolate( da, cb, 1/3 ), interpolate( he, gf ,1/3 ), 2/3 ), 
+			interpolate( interpolate( da, cb,2/3 ), interpolate( he, gf, 2/3 ), 2/3 ),
 			interpolate( hd, gc, 2/3), 
-			interpolate(hd, gc, 1/3 ), 
-			interpolate(he, gf, 1/3 ),  
-			interpolate(he, gf, 2/3 ),
+			interpolate( hd, gc, 1/3 ), 
+
+			interpolate( he, gf, 1/3 ),  
+			interpolate( he, gf, 2/3 ),
 			gh,
-			hg,   
+			hg,
+
 			n
 		); 
 
-		// back top right 
+		// BACK TOP RIGHT CUBE
 		divideMengerSponge 
-		(	interpolate(interpolate(da, cb, 2/3), interpolate(he, gf, 2/3), 2/3),
-			interpolate(cb, gf, 2/3),
+		(	interpolate(interpolate( da, cb, 2/3 ), interpolate( he, gf, 2/3 ), 2/3 ),
+			interpolate( cb, gf, 2/3 ),
 			gc, 
-			interpolate (cd, gh, 2/3),
-			interpolate(he, gf, 2/3),
+			interpolate( cd, gh, 2/3 ),
+
+			interpolate( he, gf, 2/3 ),
 			gf, 
 			g,
 			gh,
+
 			n
 		);
 		
-		// back mid left )  / \
+		// BACK MID LEFT CUBE
 		divideMengerSponge
-		(	// top
-			interpolate(ad, eh,  2/3 ),
-			interpolate(interpolate(ad, bc, 1/3 ), interpolate(eh, fg, 1/3 ), 2/3 ),
-			interpolate(interpolate(da, cb, 1/3 ), interpolate(he, gf, 1/3 ), 2/3 ),
-			interpolate(da, he, 2/3), 
+		(	interpolate( ad, eh,  2/3 ),
+			interpolate(interpolate( ad, bc, 1/3 ), interpolate( eh, fg, 1/3 ), 2/3 ),
+			interpolate(interpolate( da, cb, 1/3 ), interpolate( he, gf, 1/3 ), 2/3 ),
+			interpolate( da, he, 2/3 ), 
+
 			eh,      
-			interpolate(eh, fg, 1/3 ),
-			interpolate(he, gf, 1/3 ), 
+			interpolate( eh, fg, 1/3 ),
+			interpolate( he, gf, 1/3 ), 
 			he, 
+
 			n
 		);  
 		   
-		// back mid right
+		// BACK MID RIGHT CUBE
 		divideMengerSponge
-		(	interpolate(interpolate(ad, bc, 2/3 ), interpolate(eh, fg,2/3), 2/3 ),
-			interpolate(bc, fg, 2/3 ),
-			
-			interpolate(cb, gf, 2/3 ),
-			interpolate(interpolate(da, cb, 2/3 ), interpolate(he, gf, 2/3 ), 2/3 ),
-			interpolate(eh, fg, 2/3 ),
+		(	interpolate(interpolate( ad, bc, 2/3 ), interpolate( eh, fg,2/3 ), 2/3 ),
+			interpolate( bc, fg, 2/3 ),
+			interpolate( cb, gf, 2/3 ),
+			interpolate(interpolate( da, cb, 2/3 ), interpolate( he, gf, 2/3 ), 2/3 ),
+
+			interpolate( eh, fg, 2/3 ),
 			fg , 
 			gf,  
-			interpolate(he, gf, 2/3 ), 
+			interpolate( he, gf, 2/3 ),
+
 			n
 		);
 				 
-		//  BACK BOTTOM LEFT 
+		//  BACK LEFT BOTTOM CUBE
 		divideMengerSponge
-		(	// bottom  ,,
-			ea, 
-			interpolate(ea, fb, 1/3 ),  
-			interpolate(interpolate( ad, bc,   1/3  ), interpolate(eh, fg, 1/3 ), 2/3 ),
-			interpolate(ad, eh, 2/3 ),
+		(	ea, 
+			interpolate( ea, fb, 1/3 ),  
+			interpolate(interpolate( ad, bc, 1/3 ), interpolate( eh, fg, 1/3 ), 2/3 ),
+			interpolate( ad, eh, 2/3 ),
+
 			e, 
 			ef, 
 			interpolate(eh, fg, 1/3 ),
 			eh,
+
 			n
 		);   
 
-		// BACK MID Bottom
+		// BACK MID BOTTOM CUBE
 		divideMengerSponge
-		(	// BOTTOM
-			interpolate(ea, fb, 1/3 ), 
+		(	interpolate(ea, fb, 1/3 ), 
 			interpolate(ea, fb, 2/3 ), 
-			interpolate(interpolate(ad, bc, 2/3 ), interpolate(eh, fg, 2/3), 2/3 ),
-			interpolate(interpolate(ad, bc, 1/3 ), interpolate(eh, fg, 1/3 ), 2/3 ),
+			interpolate(interpolate(ad, bc, 2/3), interpolate(eh, fg, 2/3), 2/3),
+			interpolate(interpolate(ad, bc, 1/3), interpolate(eh, fg, 1/3 ), 2/3),
+
 			ef, 
 			fe, 
 			interpolate(eh, fg, 2/3 ),
 			interpolate(eh, fg, 1/3 ),
+
 			n
 		); 
 		
-		//  BACK LEFTRIGHT BOTTOM
+		//  BACK RIGHT BOTTOM CUBE
 		divideMengerSponge
-		(	// top 
-			interpolate(ea, fb, 2/3 ),  
+		(	interpolate(ea, fb, 2/3 ),  
 			fb, 
 			interpolate(bc, fg, 2/3 ),
-			interpolate(interpolate(ad, bc, 2/3 ) , interpolate(eh, fg, 2/3), 2/3 ), 
+			interpolate(interpolate(ad, bc, 2/3) , interpolate(eh, fg, 2/3), 2/3), 
+
 			fe , 
 			f,
 			fg,
 			interpolate(eh, fg, 2/3 ),
+
 			n
 		); 
 	}
 }   
+//--------------------------------------------------------------------------------
+// Jerusalem Cube  													
+//--------------------------------------------------------------------------------
 
+function computeJerusalemCube() {
+
+	var [a, b, c, d, e, f, g, h] = getVertices("Cubo");
+
+	vertices = [];
+	normals = [];
+
+	drawJerusalemPattern(a, b, c, d, e, f, g, h, numLevels); 
+	vertices = flatten(vertices);
+	computeVertexNormals(vertices, normals);  
+}
+
+function drawJerusalemPattern(a, b, c, d, e, f, g, h, n) {
+
+	if (n == 0) {
+		vertices.push(a, b, c, 
+					  a, c, d,
+					  e, h, g,
+					  e, g, f,
+					  h, d, c,
+					  h, c, g,
+					  e, f, b, 
+					  e, b, a,
+					  f, g, c,
+					  f, c, b,
+					  e, a, d, 
+					  e, d, h);  
+	} else {
+		var small_jd = ((Math.sqrt(2)-1) * (Math.sqrt(2)-1)); //2/3
+		var  jerusalem_distance= (Math.sqrt(2)-1);
+		var large_jd = jerusalem_distance + small_jd;
+	
+		n--; 
+
+		var ab = interpolate(a, b, jerusalem_distance);
+		var ba = interpolate(a, b, large_jd);
+		var ae = interpolate(a, e, jerusalem_distance);
+		var ea = interpolate(a, e, large_jd);
+		var bf = interpolate(b, f, jerusalem_distance);
+		var fb = interpolate(b, f, large_jd);
+		var ef = interpolate(e, f, jerusalem_distance);
+		var fe = interpolate(e, f, large_jd);
+		var dc = interpolate(d, c, jerusalem_distance);
+		var cd = interpolate(d, c, large_jd);
+		var cg = interpolate(c, g, jerusalem_distance);
+		var gc = interpolate(c, g, large_jd);
+		var hg = interpolate (h, g, jerusalem_distance);
+		var gh = interpolate(h, g, large_jd);
+		var dh = interpolate(d, h, jerusalem_distance);
+		var hd = interpolate(d, h, large_jd);
+		var ad = interpolate(a, d, jerusalem_distance);
+		var da = interpolate(a, d, large_jd);
+		var bc = interpolate(b, c, jerusalem_distance);
+		var cb = interpolate(b, c, large_jd);
+		var fg = interpolate(f, g, jerusalem_distance);
+		var gf = interpolate(f, g, large_jd);
+		var eh = interpolate(e, h, jerusalem_distance);
+		var he = interpolate(e, h, large_jd); 
+
+		//FRONT LEFT BOTTOM CUBE
+		drawJerusalemPattern
+		(	a, 
+			ab, 
+			interpolate(ab, dc, jerusalem_distance),
+			ad,
+
+			ae, 
+			interpolate(ae, bf, jerusalem_distance), 
+			interpolate(interpolate(ab, dc, jerusalem_distance ), interpolate( ef, hg, jerusalem_distance), jerusalem_distance),
+			interpolate(ae, dh, jerusalem_distance),
+
+			n
+		);
+		
+		//FRONT RIGHT BOTTOM CUBE
+		drawJerusalemPattern
+		(	ba, 
+			b,
+			bc, 
+			interpolate(ad, bc, large_jd),
+			
+			interpolate(ae, bf, large_jd),
+			bf, 
+			interpolate(bf, cg, jerusalem_distance),
+			interpolate(interpolate(bf, cg, jerusalem_distance), interpolate(ae, dh, jerusalem_distance), jerusalem_distance),
+			
+			n
+		);
+		
+		//FRONT LEFT TOP CUBE
+		drawJerusalemPattern
+		(	da, 
+			interpolate(da, cb, jerusalem_distance),
+			dc ,  
+			d, 
+
+			interpolate(da, he, jerusalem_distance),
+			interpolate(interpolate(da, he, jerusalem_distance), interpolate(cb, gf, jerusalem_distance), jerusalem_distance),
+			interpolate(dh, cg, jerusalem_distance),
+			dh,
+			
+			n
+		);
+
+		//FRONT RIGHT TOP CUBE
+		drawJerusalemPattern
+		(	interpolate(da, cb, large_jd),
+			cb, 
+			c, 
+			cd, 
+
+			interpolate(interpolate(da,  he,  jerusalem_distance), interpolate(cb, gf, jerusalem_distance), large_jd),
+			interpolate(cb, gf, jerusalem_distance),
+			cg, 
+			interpolate(dh, cg, large_jd),
+
+			n
+		);
+		
+		//BACK LEFT TOP CUBE
+		drawJerusalemPattern
+		(	interpolate(da, he, large_jd),
+			interpolate(interpolate(da, he, large_jd), interpolate(cb, gf, large_jd), jerusalem_distance),
+			interpolate(hd, gc, jerusalem_distance),
+			hd, 
+
+			he, 
+			interpolate(he, gf, jerusalem_distance),
+			hg, 
+			h,
+
+			n 
+		);
+
+		//BACK RIGHT TOP CUBE
+		drawJerusalemPattern
+		(	interpolate(interpolate(da, he, large_jd), interpolate(cb, gf, large_jd),  large_jd),
+			interpolate(cb, gf, large_jd),
+			gc, 
+			interpolate(hd, gc, large_jd),
+
+			interpolate(he, gf, large_jd),
+			gf, 
+			g, 
+			gh, 
+		
+			n
+		);
+		
+		//BACK LEFT BOTTOM CUBE	
+		drawJerusalemPattern
+		(	ea, 
+			interpolate(ea, fb, jerusalem_distance),
+			interpolate(interpolate(ea, hd, jerusalem_distance), interpolate(fb, gc, jerusalem_distance), jerusalem_distance), 
+			interpolate(ea, hd, jerusalem_distance),
+
+			e, 
+			ef, 
+			interpolate(eh, fg, jerusalem_distance),
+			eh,
+			
+			n
+		);
+		
+		//BACK RIGHT BOTTOM CUBE
+		drawJerusalemPattern
+		(	interpolate(ea, fb, large_jd), 
+			fb, 
+			interpolate(fb, gc, jerusalem_distance), 
+			interpolate(interpolate(fb, gc, jerusalem_distance), interpolate(ea, hd, jerusalem_distance), jerusalem_distance),
+			  
+			fe,  
+			f,
+			fg,  
+			interpolate(eh, fg, large_jd),
+		  
+			n
+		);
+		
+		//FRONT MID BOTTOM SMALL CUBE
+		drawJerusalemPattern
+		(	ab, 
+			ba, 
+			interpolate(ba, cd, small_jd),
+			interpolate(ab, dc, small_jd),
+			
+			interpolate(ab, ef, small_jd),
+			interpolate(ba, fe, small_jd), 
+			interpolate(interpolate(ba, cd, small_jd),interpolate(fe, gh, small_jd), small_jd),
+			interpolate(interpolate(ab, dc, small_jd), interpolate(ef, hg, small_jd), small_jd ),
+
+			n
+		); 
+		
+		//FRONT MID TOP SMALL CUBE
+		drawJerusalemPattern
+		(	interpolate(dc, ab, small_jd),
+			interpolate(cd, ba, small_jd),
+			cd,
+			dc, 
+
+			interpolate(interpolate(dc, ab, small_jd), interpolate(hg, ef, small_jd), small_jd),
+			interpolate(interpolate(cd, ba, small_jd), interpolate(gh ,fe, small_jd), small_jd),
+			interpolate(cd, gh, small_jd),
+			interpolate(dc, hg, small_jd),
+
+			n
+		);
+		
+		//FRONT LEFT MID SMALL CUBE
+		drawJerusalemPattern
+		(	ad, 
+			interpolate(ad, bc, small_jd),
+			interpolate(da, cb, small_jd),
+			da, 
+
+			interpolate(ad, eh, small_jd),
+			interpolate(interpolate(ad, eh, small_jd), interpolate(bc, fg, small_jd), small_jd),
+			interpolate(interpolate(da, he, small_jd), interpolate(cb, gf, small_jd), small_jd),
+			interpolate(da, he, small_jd), 
+ 
+			n
+		);
+		
+		//FRONT RIGHT MID SMALL CUBE
+		drawJerusalemPattern 
+		(	interpolate(bc, ad, small_jd),
+			bc, 
+			cb,
+			interpolate(cb, da, small_jd),
+
+			interpolate(interpolate(bc, fg, small_jd), interpolate(ad, eh, small_jd), small_jd),
+			interpolate(bc, fg, small_jd), 
+			interpolate(cb, gf, small_jd),
+			interpolate(interpolate(cb, gf, small_jd), interpolate(da, he, small_jd), small_jd),
+			
+			n
+		);
+		
+		//MID TOP LEFT SMALL CUBE
+		drawJerusalemPattern
+		( 	interpolate(dh, ae, small_jd), 
+			interpolate(interpolate(dh, cg, small_jd), interpolate(ae, bf, small_jd), small_jd),
+			interpolate(dh, cg, small_jd),
+			dh, 
+
+			interpolate(hd, ea, small_jd),
+			interpolate(interpolate(hd, ea, small_jd), interpolate(gc, fb, small_jd), small_jd),
+			interpolate(hd, gc,  small_jd),
+			hd,
+			
+			n
+		);
+		
+		//MID BOTTOM LEFT SMALL CUBE
+		drawJerusalemPattern
+		(	ae, 
+			interpolate(ae, bf, small_jd),
+			interpolate(interpolate(ae, bf, small_jd), interpolate(dh, cg, small_jd), small_jd),
+			interpolate(ae, dh, small_jd),
+
+			ea, 
+			interpolate(ea, fb, small_jd),
+			interpolate(interpolate(ea, fb, small_jd), interpolate(hd, gc, small_jd), small_jd),
+			interpolate(ea, hd, small_jd),
+			
+			n 
+		);
+
+		//MID TOP RIGHT SMALL CUBE
+		drawJerusalemPattern
+		(	interpolate(interpolate(cg, dh, small_jd), interpolate(bf, ae, small_jd), small_jd),
+			interpolate(cg, bf, small_jd),
+			cg,  
+			interpolate(cg, dh, small_jd),
+
+			interpolate(interpolate(gc, fb, small_jd), interpolate(hd, ea, small_jd), small_jd),
+			interpolate(gc, fb, small_jd),
+			gc, 
+			interpolate(gc, hd, small_jd),
+
+			n
+		);
+		
+		//BACK MID LEFT SMALL CUBE
+		drawJerusalemPattern
+		(	interpolate(eh, ad, small_jd),
+			interpolate(interpolate(eh, ad, small_jd), interpolate(fg, bc, small_jd), small_jd),
+			interpolate(interpolate(he, da, small_jd), interpolate(gf, cb, small_jd), small_jd), 
+			interpolate(he, da, small_jd),
+				
+			eh, 
+			interpolate(eh, fg, small_jd),
+			interpolate(he, gf, small_jd),
+			he,
+			
+			n
+		);
+		
+		//BACK MID RIGHT SMALL CUBE
+		drawJerusalemPattern
+		(	interpolate(interpolate(fg, bc, small_jd), interpolate(eh, ad, small_jd), small_jd),
+			interpolate(fg, bc, small_jd),
+			interpolate(gf, cb, small_jd), 
+			interpolate(interpolate(gf, cb, small_jd), interpolate(he, da, small_jd), small_jd),
+			
+			interpolate(fg, eh, small_jd),
+			fg, 
+			gf, 
+			interpolate(gf, he, small_jd), 
+			
+			n
+		);
+		
+		
+		//MID RIGHT BOTTOM SMALL CUBE	
+		drawJerusalemPattern
+		(	interpolate(bf, ae, small_jd),  
+			bf, 
+			interpolate(bf, cg, small_jd), 
+			interpolate(interpolate(bf, cg, small_jd), interpolate(ae, dh, small_jd), small_jd),
+			
+			interpolate(fb, ea, small_jd), 
+			fb, 
+			interpolate(fb, gc, small_jd), 
+			interpolate(interpolate(fb, gc, small_jd), interpolate(ea, hd, small_jd), small_jd), 
+			
+			n
+		);
+			
+		//BACK MID BOTTOM SMALL CUBE	
+		drawJerusalemPattern
+		(	interpolate(ef, ab, small_jd),
+			interpolate(fe, ba, small_jd),
+			interpolate(interpolate(fe, ba, small_jd), interpolate(gh, cd, small_jd), small_jd), 
+			interpolate(interpolate(ef, ab, small_jd), interpolate(hg, dc, small_jd), small_jd),
+			
+			ef, 
+			fe,
+			interpolate(fe, gh, small_jd),
+			interpolate(ef, hg, small_jd),
+			
+			n
+		); 
+
+		//BACK MID TOP SMALL CUBE	
+		drawJerusalemPattern
+		(	interpolate(interpolate(hg, dc, small_jd), interpolate(ef, ab, small_jd), small_jd),
+			interpolate(interpolate(gh, cd, small_jd), interpolate(fe, ba, small_jd), small_jd),
+			interpolate(gh, cd, small_jd),
+			interpolate(hg, dc, small_jd),
+			
+			interpolate(hg, ef, small_jd),
+			interpolate(gh, fe, small_jd),
+			gh, 
+			hg, 
+			
+			n
+		);
+	}
+}  
+
+//--------------------------------------------------------------------------------
+// Cantor Dust  													
+//--------------------------------------------------------------------------------
+
+function computeCantorDust() {
+	var [a, b, c, d, e, f, g, h] = getVertices("Cubo");
+
+	vertices = [];
+	normals = [];
+	makeDust(a, b, c, d, e, f, g, h, numLevels);
+	vertices = flatten(vertices);
+	computeVertexNormals(vertices, normals);  	
+}
+
+function makeDust(a, b, c, d, e, f, g, h, n) {
+	
+	if (n == 0) {
+		vertices.push(a, b, c, 
+					  a, c, d,
+					  e, h, g,
+					  e, g, f,
+					  h, d, c,
+					  h, c, g,
+					  e, f, b, 
+					  e, b, a,
+					  f, g, c,
+					  f, c, b,
+					  e, a, d, 
+					  e, d, h);  
+	}else {
+		var  small = 1/3
+		var large = 2/3;
+
+		n--; 
+
+		var  ab = interpolate(a, b, small);
+		var ba = interpolate(a, b, large);
+		var ae = interpolate(a, e, small);
+		var ea = interpolate(a, e, large);
+		var bf = interpolate(b, f, small);
+		var fb = interpolate(b, f, large);
+		var ef = interpolate(e, f, small);
+		var fe = interpolate(e, f, large);
+		var dc = interpolate(d, c, small);
+		var cd = interpolate(d, c, large);
+		var cg = interpolate(c, g, small);
+		var gc = interpolate(c, g, large);
+		var hg = interpolate (h, g, small);
+		var gh = interpolate(h, g, large);
+		var dh = interpolate(d, h, small);
+		var hd = interpolate(d, h, large);
+		var ad = interpolate(a, d, small);
+		var da = interpolate(a, d, large);
+		var bc = interpolate(b, c, small);
+		var cb = interpolate(b, c, large);
+		var fg = interpolate(f, g, small);
+		var gf = interpolate(f, g, large);
+		var eh = interpolate(e, h, small);
+		var he = interpolate(e, h, large); 
+
+		//FRONT LEFT BOTTOM CUBE
+		makeDust
+		(	a, 
+			ab, 
+			interpolate(ab, dc, small),
+			ad,
+
+			ae, 
+			interpolate(ae, bf, small), 
+			interpolate(interpolate(ab, dc, small), interpolate(ef, hg, small), small),
+			interpolate(ae, dh, small),
+			
+			n
+		);
+		
+		//FRONT RIGHT BOTTOM CUBE
+		makeDust
+		(	ba, 
+			b,
+			bc, 
+			interpolate(ad, bc, large),
+			
+			interpolate(ae, bf, large),
+			bf, 
+			interpolate(bf, cg, small),
+			interpolate(interpolate(bf, cg, small), interpolate(ae, dh, small), small),
+			
+			n
+		);
+		
+		//FRONT LEFT TOP CUBE
+		makeDust
+		(	da, 
+			interpolate(da, cb, small),
+			dc ,  
+			d, 
+
+			interpolate(da, he, small),
+			interpolate(interpolate(da, he, small), interpolate(cb, gf, small), small),
+			interpolate(dh, cg, small),
+			dh,
+
+			n
+		);
+		
+		//FRONT RIGHT TOP CUBE
+		makeDust
+		(	interpolate(da, cb, large),
+			cb, 
+			c, 
+			cd, 
+
+			interpolate(interpolate(da,  he,  small), interpolate(cb, gf, small), large),
+			interpolate(cb, gf, small),
+			cg, 
+			interpolate(dh, cg, large),
+			
+			n
+		);
+
+		//BACK LEFT TOP CUBE
+		makeDust
+		(	interpolate(da, he, large),
+			interpolate(interpolate(da, he, large), interpolate(cb, gf, large), small),
+			interpolate(hd, gc, small),
+			hd, 
+
+			he, 
+			interpolate(he, gf, small),
+			hg, 
+			h,
+			
+			n
+		);
+		
+		//BACK RIGHT TOP CUBE
+		makeDust
+		(	interpolate(interpolate(da, he, large), interpolate(cb, gf, large),  large),
+			interpolate(cb, gf, large),
+			gc, 
+			interpolate(hd, gc, large),
+
+			interpolate(he, gf, large),
+			gf, 
+			g, 
+			gh, 
+			
+			n
+		);
+		
+		//BACK LEFT BOTTOM CUBE
+		makeDust
+		(	ea, 
+			interpolate(ea, fb, small),
+			interpolate(interpolate(ea, hd, small), interpolate(fb, gc, small), small), 
+			interpolate(ea, hd, small),
+
+			e, 
+			ef, 
+			interpolate(eh, fg, small),
+			eh,
+
+			n
+		);
+		
+		//BACK RIGHT BOTTOM CUBE
+		makeDust
+		( 	interpolate(ea, fb, large), 
+			fb, 
+			interpolate(fb, gc, small), 
+			interpolate(interpolate(fb, gc, small), interpolate(ea, hd, small), small),
+			  
+			fe,  
+			f,
+			fg,  
+			interpolate(eh, fg, large),
+		  
+			n
+		);
+	}
+}
+
+//--------------------------------------------------------------------------------
+// Koch Snowflake   													
+//--------------------------------------------------------------------------------
 function computeKochSnowflake() {
 
 	var [a, b, c, d] = getVertices("Tetra");
@@ -1317,20 +1797,18 @@ function computeKochSnowflake() {
 	divideKochSnowflake(a, c, d, numLevels);
 	
 	vertices.push(a, b, c, 
-		c, b, d,
-		d, b, a,
-		a, c, d); 
+				  c, b, d,
+				  d, b, a,
+				  a, c, d); 
 	
 	vertices = flatten(vertices);
 	computeVertexNormals(vertices, normals);
 
 }     
 
-//var bool = true;}}
-
 function divideKochSnowflake(a, b, c, n) {
 
-		while(n > 0) {
+	while(n > 0) {
 
 		var ab = computeMidPoint(a, b);
 		var bc = computeMidPoint(b, c);
@@ -1355,528 +1833,7 @@ function divideKochSnowflake(a, b, c, n) {
 		vertices.push(ac, bc, ab, 
 					  ab, bc, nv,
 					  nv, bc, ac,
-					  ac, ab, nv);
-					
+					  ac, ab, nv);			
 	}  
-}    
-
-// Jerusálem Cube
-
-function computeJerusalemCube() {
-
-	var [a, b, c, d, e, f, g, h] = getVertices("Cubo");
-
-	vertices = [];
-	normals = [];
-
-	drawJerusalemPattern(a, b, c, d, e, f, g, h, numLevels); 
-	vertices = flatten(vertices);
-	computeVertexNormals(vertices, normals);  
-}
-
-function drawJerusalemPattern(a, b, c, d, e, f, g, h, n) {
-
-	if (n == 0) {
-		vertices.push(a, b, c, 
-			a, c, d,
-			e, h, g,
-			e, g, f,
-			 h, d, c,
-			h, c, g,
-			e, f, b, 
-			e, b, a,
-			f, g, c,
-			f, c, b,
-			e, a, d, 
-			e, d, h);  
-	}
-
-	else {
-
-		var side = distance2Points(c, d);
-		var small_jd = ((Math.sqrt(2)-1) * (Math.sqrt(2)-1)); //2/3
-		var  jerusalem_distance= (Math.sqrt(2)-1);
-		var large_jd = jerusalem_distance + small_jd;
-		//console.log(side);
-		//console.log(small_large_side);
-		//console.log(jerusalem_distance); 
-
-		n--; 
-
-		var  ab = interpolate(a, b, jerusalem_distance);
-		//console.log(ab);
-		var ba = interpolate(a, b, large_jd);
-		//console.log(ba);
-		var ae = interpolate(a, e, jerusalem_distance);
-		var ea = interpolate(a, e, large_jd);
-		var bf = interpolate(b, f, jerusalem_distance);
-		var fb = interpolate(b, f, large_jd);
-		var ef = interpolate(e, f, jerusalem_distance);
-		var fe = interpolate(e, f, large_jd);
-		var dc = interpolate(d, c, jerusalem_distance);
-		var cd = interpolate(d, c, large_jd);
-		var cg = interpolate(c, g, jerusalem_distance);
-		var gc = interpolate(c, g, large_jd);
-		var hg = interpolate (h, g, jerusalem_distance);
-		var gh = interpolate(h, g, large_jd);
-		var dh = interpolate(d, h, jerusalem_distance);
-		var hd = interpolate(d, h, large_jd);
-		var ad = interpolate(a, d, jerusalem_distance);
-		var da = interpolate(a, d, large_jd);
-		var bc = interpolate(b, c, jerusalem_distance);
-		var cb = interpolate(b, c, large_jd);
-		var fg = interpolate(f, g, jerusalem_distance);
-		var gf = interpolate(f, g, large_jd);
-		var eh = interpolate(e, h, jerusalem_distance);
-		var he = interpolate(e, h, large_jd); 
-
-		//front left bottom
-		drawJerusalemPattern(
-			a, 
-			ab, 
-			interpolate(ab, dc, jerusalem_distance),
-			ad,
-
-			ae, 
-			interpolate(ae, bf, jerusalem_distance), 
-			interpolate(interpolate(ab, dc, jerusalem_distance), interpolate(ef, hg, jerusalem_distance), jerusalem_distance),
-			interpolate(ae, dh, jerusalem_distance),
-			n
-		);
-
-		drawJerusalemPattern(
-			ba, 
-			b,
-			bc, 
-			interpolate(ad, bc, large_jd),
-			
-			interpolate(ae, bf, large_jd),
-			bf, 
-			interpolate(bf, cg, jerusalem_distance),
-			interpolate(interpolate(bf, cg, jerusalem_distance), interpolate(ae, dh, jerusalem_distance), jerusalem_distance),
-			n,
-		);
-
-		drawJerusalemPattern(
-			da, 
-			interpolate(da, cb, jerusalem_distance),
-			dc ,  
-			d, 
-
-			interpolate(da, he, jerusalem_distance),
-			interpolate(interpolate(da, he, jerusalem_distance), interpolate(cb, gf, jerusalem_distance), jerusalem_distance),
-			interpolate(dh, cg, jerusalem_distance),
-			dh,
-			n
-
-		);
-
-		drawJerusalemPattern(
-			interpolate(da, cb, large_jd),
-			cb, 
-			c, 
-			cd, 
-
-			interpolate(interpolate(da,  he,  jerusalem_distance), interpolate(cb, gf, jerusalem_distance), large_jd),
-			interpolate(cb, gf, jerusalem_distance),
-			cg, 
-			interpolate(dh, cg, large_jd),
-			n,
-		);
-
-		drawJerusalemPattern(
-			interpolate(da, he, large_jd),
-			interpolate(interpolate(da, he, large_jd), interpolate(cb, gf, large_jd), jerusalem_distance),
-			 interpolate(hd, gc, jerusalem_distance),
-			 hd, 
-
-			 he, 
-			 interpolate(he, gf, jerusalem_distance),
-			 hg, 
-			 h ,
-			 n, 
-		);
-
-		drawJerusalemPattern(
-				interpolate(interpolate(da, he, large_jd), interpolate(cb, gf, large_jd),  large_jd),
-				interpolate(cb, gf, large_jd),
-				gc, 
-				interpolate(hd, gc, large_jd),
-
-				interpolate(he, gf, large_jd),
-				gf, 
-				g, 
-				gh, 
-				n
-
-		);
- 
-		drawJerusalemPattern (
-			ea, 
-			interpolate(ea, fb, jerusalem_distance),
-			interpolate(interpolate(ea, hd, jerusalem_distance), interpolate(fb, gc, jerusalem_distance), jerusalem_distance), 
-			interpolate(ea, hd, jerusalem_distance),
-
-			e, ef, 
-			interpolate(eh, fg, jerusalem_distance),
-			eh,
-			n
-			
-		);
-
-		drawJerusalemPattern( 
-			interpolate(ea, fb, large_jd), 
-			fb, 
-			interpolate(fb, gc, jerusalem_distance), 
-			  interpolate(interpolate(fb, gc, jerusalem_distance), interpolate(ea, hd, jerusalem_distance), jerusalem_distance),
-			  
-			  fe,  
-			f,
-		fg,  
-		interpolate(eh, fg, large_jd),
-		  
-
-		  n
-		);
-
-		drawJerusalemPattern(
-			ab, 
-			ba, 
-			interpolate(ba, cd, small_jd),
-			interpolate(ab, dc, small_jd),
-			interpolate(ab, ef, small_jd),
-			interpolate(ba, fe, small_jd), 
-
-			interpolate(interpolate(ba, cd, small_jd),interpolate(fe, gh, small_jd), small_jd),
-			interpolate(interpolate(ab, dc, small_jd), interpolate(ef, hg, small_jd), small_jd ),
-
-			n,
-
-		) 
-
-		drawJerusalemPattern(
-			interpolate(dc, ab, small_jd),
-			interpolate(cd, ba, small_jd),
-			cd,
-			dc, 
-
-			interpolate(interpolate(dc, ab, small_jd), interpolate(hg, ef, small_jd), small_jd),
-			interpolate(interpolate(cd, ba, small_jd), interpolate(gh ,fe, small_jd), small_jd),
-			interpolate(cd, gh, small_jd),
-			interpolate(dc, hg, small_jd),
-			n,
-		)
-
-		drawJerusalemPattern(
-			ad, 
-			interpolate(ad, bc, small_jd),
-			interpolate(da, cb, small_jd),
-			da, 
-
-			interpolate(ad, eh, small_jd),
-			interpolate(interpolate(ad, eh, small_jd), interpolate(bc, fg, small_jd), small_jd),
-			interpolate(interpolate(da, he, small_jd), interpolate(cb, gf, small_jd), small_jd),
-			interpolate(da, he, small_jd), 
- 
-			n
-			
-		);
-
-		drawJerusalemPattern (
-			interpolate(bc, ad, small_jd),
-			bc, 
-			cb,
-			interpolate(cb, da, small_jd),
-
-			interpolate(interpolate(bc, fg, small_jd), interpolate(ad, eh, small_jd), small_jd),
-			interpolate(bc, fg, small_jd), 
-			interpolate(cb, gf, small_jd),
-			interpolate(interpolate(cb, gf, small_jd), interpolate(da, he, small_jd), small_jd),
-			n
-		)
-
-		drawJerusalemPattern( 
-			 interpolate(dh, ae, small_jd), 
-			 interpolate(interpolate(dh, cg, small_jd), interpolate(ae, bf, small_jd), small_jd),
-			 interpolate(dh, cg, small_jd),
-			 dh, 
-
-			 interpolate(hd, ea, small_jd),
-			 interpolate(interpolate(hd, ea, small_jd), interpolate(gc, fb, small_jd), small_jd),
-			 interpolate(hd, gc,  small_jd),
-			 hd,
-			 n,
-		)
-
-		drawJerusalemPattern( 
-				ae, 
-				interpolate(ae, bf, small_jd),
-			interpolate(interpolate(ae, bf, small_jd), interpolate(dh, cg, small_jd), small_jd),
-			interpolate(ae, dh, small_jd),
-
-			ea, 
-			interpolate(ea, fb, small_jd),
-			interpolate(interpolate(ea, fb, small_jd), interpolate(hd, gc, small_jd), small_jd),
-			interpolate(ea, hd, small_jd),
-			n 
-		)
-
-		drawJerusalemPattern( 
-				interpolate(eh, ad, small_jd),
-				interpolate(interpolate(eh, ad, small_jd), interpolate(fg, bc, small_jd), small_jd),
-				interpolate(interpolate(he, da, small_jd), interpolate(gf, cb, small_jd), small_jd), 
-				interpolate(he, da, small_jd),
-				
-				eh, 
-				 interpolate(eh, fg, small_jd),
-				 interpolate(he, gf, small_jd),
-				he,
-				n
-		)
-
-		drawJerusalemPattern (
-			interpolate(interpolate(fg, bc, small_jd), interpolate(eh, ad, small_jd), small_jd),
-			interpolate(fg, bc, small_jd),
-			interpolate(gf, cb, small_jd), 
-			interpolate(interpolate(gf, cb, small_jd), interpolate(he, da, small_jd), small_jd),
-			
-			interpolate(fg, eh, small_jd),
-			fg, 
-			gf, 
-			interpolate(gf, he, small_jd), 
-			n
-
-		)
-
-		drawJerusalemPattern (
-			interpolate(interpolate(cg, dh, small_jd), interpolate(bf, ae, small_jd), small_jd),
-			interpolate(cg, bf, small_jd),
-			cg,  
-			interpolate(cg, dh, small_jd),
-			interpolate(interpolate(gc, fb, small_jd), interpolate(hd, ea, small_jd), small_jd),
-			interpolate(gc, fb, small_jd),
-			gc, 
-			interpolate(gc, hd, small_jd), 
-			n
-		)
-
-		drawJerusalemPattern(interpolate(bf, ae, small_jd),  bf, interpolate(bf, cg, small_jd), interpolate(interpolate(bf, cg, small_jd), interpolate(ae, dh, small_jd), small_jd),
-			interpolate(fb, ea, small_jd), fb, interpolate(fb, gc, small_jd), interpolate(interpolate(fb, gc, small_jd), interpolate(ea, hd, small_jd), small_jd), n)
-			
-
-			drawJerusalemPattern(
-interpolate(ef, ab, small_jd),
-interpolate(fe, ba, small_jd),
-
-interpolate(interpolate(fe, ba, small_jd), interpolate(gh, cd, small_jd), small_jd), 
-	interpolate(interpolate(ef, ab, small_jd), interpolate(hg, dc, small_jd), small_jd),
-				ef, 
-			fe,
-		interpolate(fe, gh, small_jd),
-				interpolate(ef, hg, small_jd),
-					n
-
-				) 
-
-
-
-			drawJerusalemPattern(
-			interpolate(interpolate(hg, dc, small_jd), interpolate(ef, ab, small_jd), small_jd),
-			 interpolate(interpolate(gh, cd, small_jd), interpolate(fe, ba, small_jd), small_jd),
-			 interpolate(gh, cd, small_jd),
-			 interpolate(hg, dc, small_jd),
-			 interpolate(hg, ef, small_jd),
-			 interpolate(gh, fe, small_jd),
-			 gh, 
-			 hg, 
-			 n, 
-		) 
-
-
-		
-
-	}
-}  
-
-function computeCantorDust() {
-	var [a, b, c, d, e, f, g, h] = getVertices("Cubo");
-
-	vertices = [];
-	normals = [];
-	makeDust(a, b, c, d, e, f, g, h, numLevels);
-	vertices = flatten(vertices);
-	computeVertexNormals(vertices, normals);  	
-	
-}
-
-function makeDust(a, b, c, d, e, f, g, h, n) {
-	
-	if (n == 0) {
-		vertices.push(a, b, c, 
-			a, c, d,
-			e, h, g,
-			e, g, f,
-			 h, d, c,
-			h, c, g,
-			e, f, b, 
-			e, b, a,
-			f, g, c,
-			f, c, b,
-			e, a, d, 
-			e, d, h);  
-	}
-
-	else {
-		var side = distance2Points(c, d);
-		var small_jd = ((Math.sqrt(2)-1) * (Math.sqrt(2)-1)); //2/3
-		var  small = 1/3
-		var large = 2/3;
-		//console.log(side); _jdsmal 
-		//console.log(small_large_side);
-		//console.log(small); 
-
-		n--; 
-
-		var  ab = interpolate(a, b, small);
-		//console.log(ab);
-		var ba = interpolate(a, b, large);
-		//console.log(ba);
-		var ae = interpolate(a, e, small);
-		var ea = interpolate(a, e, large);
-		var bf = interpolate(b, f, small);
-		var fb = interpolate(b, f, large);
-		var ef = interpolate(e, f, small);
-		var fe = interpolate(e, f, large);
-		var dc = interpolate(d, c, small);
-		var cd = interpolate(d, c, large);
-		var cg = interpolate(c, g, small);
-		var gc = interpolate(c, g, large);
-		var hg = interpolate (h, g, small);
-		var gh = interpolate(h, g, large);
-		var dh = interpolate(d, h, small);
-		var hd = interpolate(d, h, large);
-		var ad = interpolate(a, d, small);
-		var da = interpolate(a, d, large);
-		var bc = interpolate(b, c, small);
-		var cb = interpolate(b, c, large);
-		var fg = interpolate(f, g, small);
-		var gf = interpolate(f, g, large);
-		var eh = interpolate(e, h, small);
-		var he = interpolate(e, h, large); 
-
-//front left bottom
-		makeDust(
-			a, 
-			ab, 
-			interpolate(ab, dc, small),
-			ad,
-
-			ae, 
-			interpolate(ae, bf, small), 
-			interpolate(interpolate(ab, dc, small), interpolate(ef, hg, small), small),
-			interpolate(ae, dh, small),
-			n
-		);
-
-		makeDust(
-			ba, 
-			b,
-			bc, 
-			interpolate(ad, bc, large),
-			
-			interpolate(ae, bf, large),
-			bf, 
-			interpolate(bf, cg, small),
-			interpolate(interpolate(bf, cg, small), interpolate(ae, dh, small), small),
-			n,
-		);
-
-		makeDust(
-			da, 
-			interpolate(da, cb, small),
-			dc ,  
-			d, 
-
-			interpolate(da, he, small),
-			interpolate(interpolate(da, he, small), interpolate(cb, gf, small), small),
-			interpolate(dh, cg, small),
-			dh,
-			n
-
-		);
-
-		makeDust(
-			interpolate(da, cb, large),
-			cb, 
-			c, 
-			cd, 
-
-			interpolate(interpolate(da,  he,  small), interpolate(cb, gf, small), large),
-			interpolate(cb, gf, small),
-			cg, 
-			interpolate(dh, cg, large),
-			n,
-		);
-
-
-		makeDust (
-			interpolate(da, he, large),
-			interpolate(interpolate(da, he, large), interpolate(cb, gf, large), small),
-			 interpolate(hd, gc, small),
-			 hd, 
-
-			 he, 
-			 interpolate(he, gf, small),
-			 hg, 
-			 h ,
-			 n, 
-		);
-
-		makeDust(
-				interpolate(interpolate(da, he, large), interpolate(cb, gf, large),  large),
-				interpolate(cb, gf, large),
-				gc, 
-				interpolate(hd, gc, large),
-
-				interpolate(he, gf, large),
-				gf, 
-				g, 
-				gh, 
-				n
-
-		);
- 
-		makeDust (
-			ea, 
-			interpolate(ea, fb, small),
-			interpolate(interpolate(ea, hd, small), interpolate(fb, gc, small), small), 
-			interpolate(ea, hd, small),
-
-			e, ef, 
-			interpolate(eh, fg, small),
-			eh,
-			n
-			
-		);
-
-		makeDust( 
-			interpolate(ea, fb, large), 
-			fb, 
-			interpolate(fb, gc, small), 
-			  interpolate(interpolate(fb, gc, small), interpolate(ea, hd, small), small),
-			  
-			  fe,  
-			f,
-		fg,  
-		interpolate(eh, fg, large),
-		  
-
-		  n)
-
-	}
-}
-
-
-//  			Avenged Sevenfold 1rightcenter center           
-// 1   não sei, diria que tinha uns 25% deexistem muitos aspectos em que as caracteristas    
+}   
  
